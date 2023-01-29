@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "shirasu"
+version = "0.1.0"
+description = "Simple bot framework based on OneBot"
+authors = ["kifuan <kifuan@foxmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+ujson = "^5.7.0"
+websockets = "^10.4"
+loguru = "^0.6.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
