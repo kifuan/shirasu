@@ -1,7 +1,9 @@
 from .future_table import FutureTable as FutureTable
-from .retry import retry
+from .singleton import SingletonMeta as SingletonMeta
+from .retry import retry as retry
 
 __all__ = [
     'FutureTable',
-    'retry'
+    'SingletonMeta',
+    'retry',
 ]
