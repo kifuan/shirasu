@@ -14,10 +14,10 @@ def retry(
 
     def wrapper(f: Any) -> Any:
         @wraps(f)
-        async def inner(*args, **kwargs):
+        async def inner(*args: Any, **kwargs: Any) -> Any:
             while True:
                 try:
-                    await f(*args, **kwargs)
+                    return await f(*args, **kwargs)
                 except BaseException as e:
                     if e.__class__ == skip:
                         return
@@ -25,7 +25,9 @@ def retry(
                     if not (msg := messages.get(e.__class__)):
                         raise
 
-                    logger.warning(f'{msg}, retrying in {timeout} seconds.')
+                    logger.patch(
+                        lambda r: r.update(function=f.__name__)
+                    ).warning(f'{msg}, retrying in {timeout} seconds.', from_decorator=True)
                     await asyncio.sleep(timeout)
         return inner
 
