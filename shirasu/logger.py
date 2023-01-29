@@ -1,4 +1,5 @@
 import sys
+from loguru import Logger
 from loguru import logger as logger
 
 
@@ -11,3 +12,7 @@ logger.configure(
                   '<level>{message}</level>'
     }]
 )
+
+
+def logger_with_func_name(name: str) -> Logger:
+    return logger.patch(lambda r: r.update(function=name))  # type: ignore[call-arg]

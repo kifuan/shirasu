@@ -13,6 +13,10 @@ websockets = "^10.4"
 loguru = "^0.6.0"
 
 
+[tool.poetry.group.dev.dependencies]
+mypy = "^0.991"
+types-ujson = "^5.7.0.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

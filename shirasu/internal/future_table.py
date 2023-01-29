@@ -4,7 +4,7 @@ from typing import Any
 
 
 class FutureTable:
-    def __init__(self):
+    def __init__(self) -> None:
         self._future_id = 0
         self._futures: dict[int, asyncio.Future] = {}
 
