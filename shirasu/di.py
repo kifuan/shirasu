@@ -19,8 +19,13 @@ class UnknownDependencyError(Exception):
 
 
 class DependencyInjector(metaclass=SingletonMeta):
+    """
+    Dependency injector based on annotations.
+    Note: it does not support positional-only arguments.
+    """
+
     def __init__(self) -> None:
-        self._dependencies: dict[type, Callable[[...], Awaitable[Any]]] = {}
+        self._providers: dict[type, Callable[[...], Awaitable[Any]]] = {}
 
     async def _inject_func_args(self, func: Callable[[...], Awaitable[Any]]) -> dict[str, Any]:
         params = inspect.signature(func).parameters
@@ -28,14 +33,14 @@ class DependencyInjector(metaclass=SingletonMeta):
         # Use := operator here is too ugly.
         unknown_deps = [
             param.annotation for param in params.values()
-            if param.annotation not in self._dependencies
+            if param.annotation not in self._providers
         ]
 
         if unknown_deps:
             raise UnknownDependencyError(unknown_deps)
 
         return {
-            name: await self._apply(self._dependencies[param.annotation])
+            name: await self._apply(self._providers[param.annotation])
             for name, param in params.items()
         }
 
@@ -53,10 +58,10 @@ class DependencyInjector(metaclass=SingletonMeta):
     def provide(self, typ: type, func: Callable[[...], Awaitable[_T]]) -> None:
         assert inspect.iscoroutinefunction(func), 'Dependency provider must be async.'
 
-        if typ in self._dependencies:
+        if typ in self._providers:
             logger.warning(f'Dependency provider of {typ.__name__} will be overwritten.')
 
-        self._dependencies[typ] = func
+        self._providers[typ] = func
 
 
 def inject():
