@@ -43,15 +43,12 @@ class Client:
 
         post_type = data.get('post_type')
         if post_type == 'meta_event':
-            logger.trace(f'Received meta event {data["meta_event_type"]}.')
             return
 
-        if post_type == 'message' or post_type == 'notice':
-            logger.info(data)
-            await asyncio.gather(*(p.do_receive() for p in AddonPool()))
-            return
+        if message := data.get('message'):
+            logger.info(f'Received message {message}')
 
-        logger.warning(f'Ignoring event {post_type}.')
+        await asyncio.gather(*(p.do_receive() for p in AddonPool()))
 
     async def _do_listen(self) -> None:
         if count := len(self._tasks):
