@@ -48,3 +48,11 @@ def test_parse_json():
     msg = parse_cq_message(f'[CQ:json,data={data}]').segments[0]
     assert msg.type == 'json'
     assert msg.data['data'] == data
+
+
+def test_multiple():
+    segments = parse_cq_message(f'[CQ:image,file=file.jpg]text[CQ:at,qq=1883]').segments
+    assert len(segments) == 3
+    assert segments[0].type == 'image'
+    assert segments[1].type == 'text'
+    assert segments[2].type == 'at'
