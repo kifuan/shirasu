@@ -34,9 +34,7 @@ class Rule:
         :return: whether or not matched.
         """
 
-        if asyncio.iscoroutine(res := self._handler()):
-            res = await res
-        return res
+        return await self._handler()
 
 
 def command(cmd: str) -> Rule:
@@ -64,7 +62,7 @@ def regex(r: Union[str, re.Pattern]) -> Rule:
         r = re.compile(r)
 
     async def handler(ctx: Context) -> bool:
-        return bool(r.match(ctx.message))
+        return bool(r.match(ctx.message.plain_text))  # type: ignore
 
     return Rule(handler)
 
