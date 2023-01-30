@@ -28,14 +28,15 @@ class Client:
         self._ws = ws
         self._futures = FutureTable()
         self._tasks: set[asyncio.Task] = set()
-        self._data = {}
+        self._ctx: Context | None = None
         di.provide('ctx', self._provide_context, check_duplicate=False)
 
     async def _provide_context(self) -> Context:
-        return Context(self, self._data)
+        assert self._ctx is not None
+        return self._ctx
 
     async def _handle(self, data: dict[str, Any]) -> None:
-        self._data = data
+        self._ctx = Context(self, data)
 
         if echo := data.get('echo'):
             self._futures.set(int(echo), data)
@@ -88,6 +89,7 @@ class Client:
         :return: the action result.
         """
 
+        logger.info(f'Calling {action} with {params}')
         future_id = self._futures.register()
         await self._ws.send(ujson.dumps({
             'action': action,
