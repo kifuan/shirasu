@@ -1,6 +1,5 @@
 import inspect
 from typing import Any, Callable, Awaitable, TypeVar
-from .logger import logger
 
 
 _T = TypeVar('_T')
@@ -28,6 +27,11 @@ class CircularDependencyError(DependencyError):
 
     def __init__(self, deps: list[type]) -> None:
         super().__init__(deps, 'circular dependencies')
+
+
+class DuplicateDependencyProviderError(DependencyError):
+    def __init__(self, dep: type) -> None:
+        super().__init__([dep], 'duplicate dependency provider')
 
 
 class DependencyInjector:
@@ -67,14 +71,14 @@ class DependencyInjector:
             return await self._apply(func)
         return wrapper
 
-    def provide(self, func: Callable[..., Awaitable[_T]]) -> None:
+    def provide(self, func: Callable[..., Awaitable[_T]], *, check_duplicate: bool = True) -> None:
         assert inspect.iscoroutinefunction(func), 'Dependency provider must be async.'
 
         typ = inspect.signature(func).return_annotation
         assert typ is not None and typ != inspect.Parameter.empty, 'Dependency provider must have return type.'
 
-        if typ in self._providers:
-            logger.warning(f'Dependency provider of {typ.__name__} will be overwritten.')
+        if check_duplicate and typ in self._providers:
+            raise DuplicateDependencyProviderError(typ)
 
         self._providers[typ] = func
 
@@ -96,13 +100,13 @@ def inject():
     return deco
 
 
-def provide() -> Callable[[Callable[..., Awaitable[_T]]], Callable[..., Awaitable[_T]]]:
+def provide(*, check_duplicate: bool = True) -> Callable[[Callable[..., Awaitable[_T]]], Callable[..., Awaitable[_T]]]:
     """
     Registers provider using decorator.
     :return: the decorator to register provider.
     """
 
     def deco(func: Callable[..., Awaitable[_T]]) -> Callable[..., Awaitable[_T]]:
-        di.provide(func)
+        di.provide(func, check_duplicate=check_duplicate)
         return func
     return deco

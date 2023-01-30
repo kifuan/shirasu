@@ -1,5 +1,10 @@
 import pytest
-from shirasu.di import DependencyInjector, CircularDependencyError, UnknownDependencyError
+from shirasu.di import (
+    DependencyInjector,
+    CircularDependencyError,
+    UnknownDependencyError,
+    DuplicateDependencyProviderError,
+)
 
 
 FLOAT = 12.
@@ -50,3 +55,11 @@ async def test_unknown():
     di.provide(provide_float_unknown_dep)
     with pytest.raises(UnknownDependencyError):
         await di.inject(user)()
+
+
+def test_duplicate_provider():
+    di = DependencyInjector()
+    di.provide(provide_int)
+    di.provide(provide_int, check_duplicate=False)
+    with pytest.raises(DuplicateDependencyProviderError):
+        di.provide(provide_int)
