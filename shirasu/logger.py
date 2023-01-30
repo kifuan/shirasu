@@ -1,5 +1,5 @@
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from loguru import logger as logger
 
 if TYPE_CHECKING:
@@ -17,5 +17,9 @@ logger.configure(
 )
 
 
-def logger_with_func_name(name: str) -> "Logger":
-    return logger.patch(lambda r: r.update(function=name))  # type: ignore[call-arg]
+def logger_deco(f: Any) -> "Logger":
+    return logger.patch(lambda r: r.update(
+        function=f.__name__,
+        name=f.__module__,
+        line=f.__code__.co_firstlineno,
+    ))  # type: ignore[call-arg]
