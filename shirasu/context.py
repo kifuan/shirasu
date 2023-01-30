@@ -1,4 +1,4 @@
-from typing import Any, TYPE_CHECKING
+from typing import Any, Literal, TYPE_CHECKING
 from .message import Message, Text
 from .logger import logger
 
@@ -10,6 +10,12 @@ class Context:
     def __init__(self, client: "Client", data: dict[str, Any]) -> None:
         self._client = client
         self._data = data
+
+    @property
+    def post_type(self) -> Literal['message', 'request', 'notice', 'meta_event']:
+        t = self._data.get('post_type')
+        assert t, 'Must check if the event is API result before getting from context.'
+        return t
 
     @property
     def user_id(self) -> int | None:
