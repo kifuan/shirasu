@@ -1,62 +1,77 @@
 import inspect
 from typing import Any, Callable, Awaitable, TypeVar
 from .logger import logger
-from .internal import SingletonMeta
 
 
 _T = TypeVar('_T')
 
 
-class UnknownDependencyError(Exception):
+class DependencyError(Exception):
+    def __init__(self, deps: list[type], prompt: str) -> None:
+        super().__init__(f'{prompt}: {", ".join(d.__name__ for d in deps)}')
+        self.deps = deps
+
+
+class UnknownDependencyError(DependencyError):
     """
     Dependency not found.
     """
 
     def __init__(self, deps: list[type]) -> None:
-        names = ', '.join(d.__name__ for d in deps)
-        super().__init__(f'unknown dependencies: {names}')
-        self.deps = deps
+        super().__init__(deps, 'unknown dependencies')
 
 
-class DependencyInjector(metaclass=SingletonMeta):
+class CircularDependencyError(DependencyError):
+    """
+    Circular dependency.
+    """
+
+    def __init__(self, deps: list[type]) -> None:
+        super().__init__(deps, 'circular dependencies')
+
+
+class DependencyInjector:
     """
     Dependency injector based on annotations.
     Note: it does not support positional-only arguments.
     """
 
     def __init__(self) -> None:
-        self._providers: dict[type, Callable[[...], Awaitable[Any]]] = {}
+        self._providers: dict[type, Callable[..., Awaitable[Any]]] = {}
 
-    async def _inject_func_args(self, func: Callable[[...], Awaitable[Any]]) -> dict[str, Any]:
-        params = inspect.signature(func).parameters
-
-        # Use := operator here is too ugly.
-        unknown_deps = [
-            param.annotation for param in params.values()
-            if param.annotation not in self._providers
-        ]
-
-        if unknown_deps:
-            raise UnknownDependencyError(unknown_deps)
-
-        return {
-            name: await self._apply(self._providers[param.annotation])
-            for name, param in params.items()
+    async def _inject_func_args(self, func: Callable[..., Awaitable[Any]], *inject_for: type) -> dict[str, Any]:
+        params = {
+            name: param.annotation
+            for name, param in inspect.signature(func).parameters.items()
         }
 
-    async def _apply(self, func: Callable[[...], Awaitable[_T]]) -> _T:
-        injected_args = await self._inject_func_args(func)
+        if unknown_deps := [typ for typ in params.values() if typ not in self._providers]:
+            raise UnknownDependencyError(unknown_deps)
+
+        if circular_deps := [typ for typ in params.values() if typ in inject_for]:
+            raise CircularDependencyError(circular_deps)
+
+        return {
+            name: await self._apply(self._providers[typ], typ, *inject_for)
+            for name, typ in params.items()
+        }
+
+    async def _apply(self, func: Callable[..., Awaitable[_T]], *apply_for: type) -> _T:
+        injected_args = await self._inject_func_args(func, *apply_for)
         return await func(**injected_args)
 
-    def inject(self, func: Callable[[...], Awaitable[_T]]) -> Callable[[], Awaitable[_T]]:
+    def inject(self, func: Callable[..., Awaitable[_T]]) -> Callable[[], Awaitable[_T]]:
         assert inspect.iscoroutinefunction(func), 'Injected function must be async.'
 
         async def wrapper():
             return await self._apply(func)
         return wrapper
 
-    def provide(self, typ: type, func: Callable[[...], Awaitable[_T]]) -> None:
+    def provide(self, func: Callable[..., Awaitable[_T]]) -> None:
         assert inspect.iscoroutinefunction(func), 'Dependency provider must be async.'
+
+        typ = inspect.signature(func).return_annotation
+        assert typ is not None and typ != inspect.Parameter.empty, 'Dependency provider must have return type.'
 
         if typ in self._providers:
             logger.warning(f'Dependency provider of {typ.__name__} will be overwritten.')
@@ -64,14 +79,30 @@ class DependencyInjector(metaclass=SingletonMeta):
         self._providers[typ] = func
 
 
+di = DependencyInjector()
+"""
+The global dependency injector.
+"""
+
+
 def inject():
-    def deco(func: Callable[[...], Awaitable[_T]]) -> Callable[[], Awaitable[_T]]:
-        return DependencyInjector().inject(func)
+    """
+    Injects function using decorator.
+    :return: the decorator to inject function.
+    """
+
+    def deco(func: Callable[..., Awaitable[_T]]) -> Callable[[], Awaitable[_T]]:
+        return di.inject(func)
     return deco
 
 
-def provide(typ: type) -> Callable[[_T], _T]:
-    def deco(func: _T) -> _T:
-        DependencyInjector().provide(typ, func)
+def provide() -> Callable[[Callable[..., Awaitable[_T]]], Callable[..., Awaitable[_T]]]:
+    """
+    Registers provider using decorator.
+    :return: the decorator to register provider.
+    """
+
+    def deco(func: Callable[..., Awaitable[_T]]) -> Callable[..., Awaitable[_T]]:
+        di.provide(func)
         return func
     return deco
