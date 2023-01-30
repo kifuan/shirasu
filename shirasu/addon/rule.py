@@ -18,15 +18,17 @@ class Rule:
         self._handler = di.inject(handler)
 
     def __or__(self, rule: 'Rule') -> 'Rule':
-        return self._compose(rule, operator.or_)
+        async def handler() -> bool:
+            if await self.match():
+                return True
+            return await rule.match()
+        return Rule(handler)
 
     def __and__(self, rule: 'Rule') -> 'Rule':
-        return self._compose(rule, operator.and_)
-
-    def _compose(self, rule: 'Rule', op: Callable[[bool, bool], bool]) -> 'Rule':
         async def handler() -> bool:
-            res = await asyncio.gather(self.match(), rule.match())
-            return op(*res)
+            if not await self.match():
+                return False
+            return await rule.match()
         return Rule(handler)
 
     async def match(self) -> bool:
