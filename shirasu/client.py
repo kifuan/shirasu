@@ -5,12 +5,11 @@ from typing import Any
 from websockets.exceptions import ConnectionClosedError
 from websockets.legacy.client import connect, WebSocketClientProtocol
 
-from .client import Client
-from ..logger import logger
-from ..internal import FutureTable, retry
+from .logger import logger
+from .internal import FutureTable, retry
 
 
-class OneBotClient(Client):
+class Client:
     def __init__(self, ws: WebSocketClientProtocol):
         self._ws = ws
         self._futures = FutureTable()
@@ -27,7 +26,6 @@ class OneBotClient(Client):
             'echo': future_id,
         }))
         return await self._futures.get(future_id, timeout)
-
 
     async def do_listen(self) -> None:
         if count := len(self._tasks):
