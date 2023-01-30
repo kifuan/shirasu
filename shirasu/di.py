@@ -60,7 +60,6 @@ class DependencyInjector:
 
     def __init__(self) -> None:
         self._providers: dict[str, Callable[..., Awaitable[Any]]] = {}
-        self._provider_types: dict[str, type] = {}
 
     async def _inject_func_args(self, func: Callable[..., Awaitable[Any]], *inject_for: str) -> dict[str, Any]:
         params = inspect.signature(func).parameters
@@ -98,14 +97,10 @@ class DependencyInjector:
     def provide(self, name: str, func: Callable[..., Awaitable[T]], *, check_duplicate: bool = True) -> None:
         assert inspect.iscoroutinefunction(func), 'Dependency provider must be async.'
 
-        typ = inspect.signature(func).return_annotation
-        assert typ != inspect.Parameter.empty, 'Dependency provider should have return annotation.'
-
         if check_duplicate and name in self._providers:
             raise DuplicateDependencyProviderError(name)
 
         self._providers[name] = func
-        self._provider_types[name] = typ
 
 
 di = DependencyInjector()
