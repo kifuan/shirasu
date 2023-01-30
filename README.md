@@ -55,7 +55,11 @@
   await use_now_wrong_type()
   ```
 
-  To keep the code simple, everything should be `async`, and the annotations of injected parameters **cannot be a string**(e.g. using the string `"datetime"` as the annotation for parameter `now` cannot work). They should be real types because the injector will check if they are correct.
+  To keep the code simple, everything should be `async`.
+
+  The annotation of each injected parameter **cannot be a string**(e.g. using `"datetime"` as the annotation for the parameter `now` is incorrect).
+
+  They should be real types because the injector will check if they are correct.
 
 + Addon System, without the need of ensuring import orders.
 
