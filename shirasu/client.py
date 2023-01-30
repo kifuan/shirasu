@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from websockets.exceptions import ConnectionClosedError
 from websockets.legacy.client import connect, WebSocketClientProtocol
 
-from .di import di, inject
+from .di import di
 from .addon import AddonPool
 from .config import load_config, GlobalConfig
 from .logger import logger
@@ -30,19 +30,23 @@ class Client(ABC):
     The client to send and receive messages.
     """
 
-    def __init__(self, global_config: GlobalConfig):
+    def __init__(self, pool: AddonPool, global_config: GlobalConfig):
         self.curr_event: Event | None = None
-        self.pool = AddonPool()
+        self._pool = pool
         self._global_config = global_config
         di.provide('global_config', self._provide_global_config, check_duplicate=False)
-        di.provide('event', self._provide_event, check_duplicate=False)
         di.provide('client', self._provide_client, check_duplicate=False)
+        di.provide('event', self._provide_event, check_duplicate=False)
+        di.provide('pool', self._provide_pool, check_duplicate=False)
 
     async def _provide_global_config(self) -> GlobalConfig:
         return self._global_config
 
     async def _provide_event(self) -> Event:
         return self.curr_event
+
+    async def _provide_pool(self) -> AddonPool:
+        return self._pool
 
     async def _provide_client(self) -> 'Client':
         return self
@@ -80,8 +84,8 @@ class Client(ABC):
         Applies all addons.
         """
 
-        selectors = await asyncio.gather(*(addon.do_match() for addon in self.pool))
-        matched_addons = list(compress(self.pool, selectors))
+        selectors = await asyncio.gather(*(addon.do_match() for addon in self._pool))
+        matched_addons = list(compress(self._pool, selectors))
 
         if not (count := len(matched_addons)):
             return
@@ -94,8 +98,8 @@ class Client(ABC):
 
 
 class OneBotClient(Client):
-    def __init__(self, ws: WebSocketClientProtocol, global_config: GlobalConfig):
-        super().__init__(global_config)
+    def __init__(self, ws: WebSocketClientProtocol, pool: AddonPool, global_config: GlobalConfig):
+        super().__init__(pool, global_config)
         self._ws = ws
         self._futures = FutureTable()
         self._tasks: set[asyncio.Task] = set()
@@ -165,16 +169,17 @@ class OneBotClient(Client):
         ConnectionClosedError: 'Connection closed',
         ConnectionRefusedError: 'Connection refused',
     })
-    async def listen(cls, config: str | Path = 'shirasu.json') -> None:
+    async def listen(cls, *, pool: AddonPool, config: str | Path = 'shirasu.json') -> None:
         """
         Start listening the websocket url.
+        :param pool: the addon pool, which can be used to preload plugins.
         :param config: the path to config file.
         """
 
         conf = load_config(config)
         async with connect(conf.ws) as ws:
             logger.success('Connected to websocket.')
-            await cls(ws, conf)._do_listen()
+            await cls(ws, pool, conf)._do_listen()
 
     async def send_msg(
             self,
@@ -195,8 +200,8 @@ class OneBotClient(Client):
 
 
 class MockClient(Client):
-    def __init__(self, global_config: GlobalConfig | None = None):
-        super().__init__(global_config or GlobalConfig())
+    def __init__(self, pool: AddonPool, global_config: GlobalConfig | None = None):
+        super().__init__(pool, global_config or GlobalConfig())
         self._message_queue: Queue[MessageEvent] = Queue()
 
     async def post_event(self, event: Event) -> None:
@@ -219,5 +224,5 @@ class MockClient(Client):
         ))
         return -1
 
-    async def get_message(self, timeout: float = 1.):
+    async def get_message(self, timeout: float = .1):
         return await asyncio.wait_for(self._message_queue.get(), timeout)
