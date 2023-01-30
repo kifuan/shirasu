@@ -8,7 +8,7 @@ from websockets.legacy.client import connect, WebSocketClientProtocol
 
 from .di import di
 from .addon import AddonPool
-from .config import load_config, Config
+from .config import load_config, GlobalConfig
 from .logger import logger
 from .context import Context
 from .util import FutureTable, retry
@@ -26,21 +26,25 @@ class Client:
     The websocket client.
     """
 
-    def __init__(self, ws: WebSocketClientProtocol, config: Config):
+    def __init__(self, ws: WebSocketClientProtocol, global_config: GlobalConfig):
         self._ws = ws
         self._futures = FutureTable()
         self._tasks: set[asyncio.Task] = set()
         self._ctx: Context | None = None
-        self._config = config
+        self._global_config = global_config
         di.provide('ctx', self._provide_context, check_duplicate=False)
+        di.provide('global_config', self._provide_global_config, check_duplicate=False)
 
     @property
-    def config(self) -> Config:
-        return self._config
+    def global_config(self) -> GlobalConfig:
+        return self._global_config
 
     async def _provide_context(self) -> Context:
         assert self._ctx is not None
         return self._ctx
+
+    async def _provide_global_config(self) -> GlobalConfig:
+        return self._global_config
 
     async def _handle(self, data: dict[str, Any]) -> None:
         self._ctx = Context(self, data)

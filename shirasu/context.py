@@ -14,7 +14,7 @@ class Context:
 
     def match_command(self, cmd: str) -> bool:
         t = self.message.plain_text
-        for start in self._client.config.command_start:
+        for start in self._client.global_config.command_start:
             prefix = start + cmd
             if t.startswith(prefix):
                 self._arg = t.removeprefix(prefix).strip()
