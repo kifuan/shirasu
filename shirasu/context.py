@@ -6,10 +6,23 @@ if TYPE_CHECKING:
     from .client import Client
 
 
+COMMAND_START = ['/']
+
+
 class Context:
     def __init__(self, client: "Client", data: dict[str, Any]) -> None:
         self._client = client
         self._data = data
+        self._arg = ''
+
+    def match_command(self, cmd: str) -> bool:
+        t = self.message.plain_text
+        for start in COMMAND_START:
+            prefix = start + cmd
+            if t.startswith(prefix):
+                self._arg = t.removeprefix(prefix).strip()
+                return True
+        return False
 
     @property
     def post_type(self) -> Literal['message', 'request', 'notice', 'meta_event']:
@@ -32,6 +45,10 @@ class Context:
     @property
     def message(self) -> Message:
         return parse_cq_message(self._data.get('raw_message', ''))
+
+    @property
+    def arg(self) -> str:
+        return self._arg
 
     async def send_private_msg(self, user_id: int, message: Message) -> int:
         msg = await self._client.call_action(
