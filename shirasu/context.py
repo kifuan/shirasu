@@ -1,5 +1,5 @@
 from typing import Any, Literal, TYPE_CHECKING
-from .message import Message, Text
+from .message import Message, MessageSegment, text, parse_cq_message
 from .logger import logger
 
 if TYPE_CHECKING:
@@ -30,8 +30,8 @@ class Context:
         return self._data.get('notice', '')
 
     @property
-    def message(self) -> str:
-        return self._data.get('message', '')
+    def message(self) -> Message:
+        return parse_cq_message(self._data.get('raw_message', ''))
 
     async def send_private_msg(self, user_id: int, message: Message) -> int:
         msg = await self._client.call_action(
@@ -49,9 +49,11 @@ class Context:
         )
         return msg['message_id']
 
-    async def send(self, message: Message | str) -> int:
+    async def send(self, message: Message | MessageSegment | str) -> int:
         if isinstance(message, str):
-            message = Text(message)
+            message = text(message)
+        if isinstance(message, MessageSegment):
+            message = Message(message)
 
         if group_id := self.group_id:
             return await self.send_group_msg(group_id, message)
