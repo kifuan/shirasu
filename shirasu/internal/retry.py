@@ -1,7 +1,7 @@
 import asyncio
 from typing import Type, Callable, Any
 from functools import wraps
-from ..logger import logger
+from ..logger import logger, logger_with_func_name
 
 
 def retry(
@@ -25,8 +25,8 @@ def retry(
                     if not (msg := messages.get(e.__class__)):
                         raise
 
-                    logger.patch(
-                        lambda r: r.update(function=f.__name__)
+                    logger_with_func_name(
+                        name=f.__name__,
                     ).warning(f'{msg}, retrying in {timeout} seconds.', from_decorator=True)
                     await asyncio.sleep(timeout)
         return inner
