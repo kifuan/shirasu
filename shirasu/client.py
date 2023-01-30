@@ -19,6 +19,10 @@ class ActionFailedError(Exception):
 
 
 class Client:
+    """
+    The websocket client.
+    """
+
     def __init__(self, ws: WebSocketClientProtocol):
         self._ws = ws
         self._futures = FutureTable()
@@ -29,7 +33,7 @@ class Client:
     async def _provide_context(self) -> Context:
         return Context(self, self._data)
 
-    async def handle(self, data: dict[str, Any]) -> None:
+    async def _handle(self, data: dict[str, Any]) -> None:
         self._data = data
 
         if echo := data.get('echo'):
@@ -51,7 +55,44 @@ class Client:
 
         logger.warning(f'Ignoring event {post_type}.')
 
+    async def _do_listen(self) -> None:
+        if count := len(self._tasks):
+            logger.warning(f'Canceling {count} undone tasks')
+            for task in self._tasks:
+                task.cancel()
+            self._tasks.clear()
+
+        async for message in self._ws:
+            if isinstance(message, bytes):
+                message = message.decode('utf8')
+            task = asyncio.create_task(self._handle(ujson.loads(message)))
+            self._tasks.add(task)
+            task.add_done_callback(self._tasks.discard)
+
+    @classmethod
+    @retry(timeout=5., messages={
+        ConnectionClosedError: 'Connection closed',
+        ConnectionRefusedError: 'Connection refused',
+    })
+    async def listen(cls, url: str) -> None:
+        """
+        Start listening the websocket url.
+        :param url: the url to listen.
+        """
+
+        async with connect(url) as ws:
+            logger.info('Start listening.')
+            await cls(ws)._do_listen()
+
     async def call_action(self, action: str, timeout: float = 30., **params: Any) -> dict[str, Any]:
+        """
+        Calls action via websocket.
+        :param action: the action.
+        :param timeout: the timeout.
+        :param params: the params to call the action.
+        :return: the action result.
+        """
+
         future_id = self._futures.register()
         await self._ws.send(ujson.dumps({
             'action': action,
@@ -64,27 +105,3 @@ class Client:
             raise ActionFailedError(data)
 
         return data.get('data', {})
-
-    async def do_listen(self) -> None:
-        if count := len(self._tasks):
-            logger.warning(f'Canceling {count} undone tasks')
-            for task in self._tasks:
-                task.cancel()
-            self._tasks.clear()
-
-        async for message in self._ws:
-            if isinstance(message, bytes):
-                message = message.decode('utf8')
-            task = asyncio.create_task(self.handle(ujson.loads(message)))
-            self._tasks.add(task)
-            task.add_done_callback(self._tasks.discard)
-
-    @classmethod
-    @retry(timeout=5., messages={
-        ConnectionClosedError: 'Connection closed',
-        ConnectionRefusedError: 'Connection refused',
-    })
-    async def listen(cls, url: str) -> None:
-        async with connect(url) as ws:
-            logger.info('Start listening.')
-            await cls(ws).do_listen()
