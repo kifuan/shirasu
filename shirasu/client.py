@@ -92,11 +92,10 @@ class Client:
             logger.success('Connected to websocket.')
             await cls(ws, conf)._do_listen()
 
-    async def call_action(self, action: str, timeout: float = 30., **params: Any) -> dict[str, Any]:
+    async def call_action(self, action: str, **params: Any) -> dict[str, Any]:
         """
         Calls action via websocket.
         :param action: the action.
-        :param timeout: the timeout.
         :param params: the params to call the action.
         :return: the action result.
         """
@@ -109,7 +108,7 @@ class Client:
             'echo': future_id,
         }))
 
-        data = await self._futures.get(future_id, timeout)
+        data = await self._futures.get(future_id, self._global_config.action_timeout)
         if data.get('status') == 'failed':
             raise ActionFailedError(data)
 
