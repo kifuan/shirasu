@@ -6,9 +6,6 @@ if TYPE_CHECKING:
     from .client import Client
 
 
-COMMAND_START = ['/']
-
-
 class Context:
     def __init__(self, client: "Client", data: dict[str, Any]) -> None:
         self._client = client
@@ -17,7 +14,7 @@ class Context:
 
     def match_command(self, cmd: str) -> bool:
         t = self.message.plain_text
-        for start in COMMAND_START:
+        for start in self._client.config.command_start:
             prefix = start + cmd
             if t.startswith(prefix):
                 self._arg = t.removeprefix(prefix).strip()

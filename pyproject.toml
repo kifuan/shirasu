@@ -11,6 +11,7 @@ python = "^3.10"
 ujson = "^5.7.0"
 websockets = "^10.4"
 loguru = "^0.6.0"
+pydantic = "^1.10.4"
 
 
 [tool.poetry.group.dev.dependencies]
