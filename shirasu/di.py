@@ -6,6 +6,10 @@ _T = TypeVar('_T')
 
 
 class DependencyError(Exception):
+    """
+    Base error for dependency injection errors.
+    """
+
     def __init__(self, deps: list[str], prompt: str) -> None:
         super().__init__(f'{prompt}: {", ".join(deps)}')
         self.deps = deps
@@ -30,11 +34,19 @@ class CircularDependencyError(DependencyError):
 
 
 class InvalidDependencyError(DependencyError):
+    """
+    Invalid dependency, which means type mismatch.
+    """
+
     def __init__(self, deps: list[str]) -> None:
         super().__init__(deps, 'wrong dependency types')
 
 
 class DuplicateDependencyProviderError(DependencyError):
+    """
+    Duplicate provider.
+    """
+
     def __init__(self, dep: str) -> None:
         super().__init__([dep], 'duplicate dependency provider')
 
