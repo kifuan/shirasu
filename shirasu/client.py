@@ -137,13 +137,13 @@ class OneBotClient(Client):
 
         logger.info(f'Received event {data}')
 
-        self._event = None
+        self.curr_event = None
         if post_type == 'message':
-            self._event = MessageEvent.from_data(data)
+            self.curr_event = MessageEvent.from_data(data)
         elif post_type == 'request':
-            self._event = RequestEvent.from_data(data)
+            self.curr_event = RequestEvent.from_data(data)
         elif post_type == 'notice':
-            self._event = NoticeEvent.from_data(data)
+            self.curr_event = NoticeEvent.from_data(data)
         else:
             logger.warning(f'Ignoring unknown event {post_type}.')
             return
@@ -191,7 +191,7 @@ class OneBotClient(Client):
     ) -> int:
         res = await self._call_action(
             action='send_msg',
-            message=message,
+            message=message.to_json_obj(),
             user_id=user_id,
             group_id=group_id,
             message_type=message_type,
