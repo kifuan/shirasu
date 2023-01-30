@@ -5,37 +5,46 @@ from shirasu.message import (
 
 def test_parse_image():
     file = 'taffy.jpg'
-    img = parse_cq_message(f'[CQ:image,file={file}]')
-    assert img.segments[0].data['file'] == file
+    msg = parse_cq_message(f'[CQ:image,file={file}]').segments[0]
+    assert msg.type == 'image'
+    assert msg.data['file'] == file
 
 
 def test_parse_text():
     t = 'this is simple text, nothing else'
-    assert parse_cq_message(t).segments[0].data['text'] == t
+    msg = parse_cq_message(t).segments[0]
+    assert msg.type == 'text'
+    assert msg.data['text'] == t
 
 
 def test_parse_at():
     qq = 1883
-    assert parse_cq_message(f'[CQ:at,qq={qq}]').segments[0].data['qq'] == qq
+    msg = parse_cq_message(f'[CQ:at,qq={qq}]').segments[0]
+    assert msg.type == 'at'
+    assert msg.data['qq'] == qq
 
 
 def test_parse_record():
     file = 'taffy.mp3'
-    record = parse_cq_message(f'[CQ:record,file={file}]').segments[0]
-    assert record.data['file'] == file
+    msg = parse_cq_message(f'[CQ:record,file={file}]').segments[0]
+    assert msg.type == 'record'
+    assert msg.data['file'] == file
 
 
 def test_parse_poke():
-    assert parse_cq_message('[CQ:poke]').segments[0].type == 'poke'
+    msg = parse_cq_message('[CQ:poke]').segments[0]
+    assert msg.type == 'poke'
 
 
 def test_parse_xml():
     data = '<something></something>'
-    xml = parse_cq_message(f'[CQ:xml,data={data}]').segments[0]
-    assert xml.data['data'] == data
+    msg = parse_cq_message(f'[CQ:xml,data={data}]').segments[0]
+    assert msg.type == 'xml'
+    assert msg.data['data'] == data
 
 
 def test_parse_json():
     data = '{"a": true}'
-    json = parse_cq_message(f'[CQ:json,data={data}]').segments[0]
-    assert json.data['data'] == data
+    msg = parse_cq_message(f'[CQ:json,data={data}]').segments[0]
+    assert msg.type == 'json'
+    assert msg.data['data'] == data
