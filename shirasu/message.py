@@ -12,6 +12,9 @@ class MessageSegment:
     type: str
     data: dict[str, Any]
 
+    def to_json_obj(self) -> Any:
+        return {'type': self.type, 'data': self.data}
+
 
 class Message:
     def __init__(self, *segments: MessageSegment):
@@ -27,8 +30,8 @@ class Message:
 
     def to_json_obj(self) -> Any:
         if len(self._segments) == 1:
-            return self._segments[0].__dict__
-        return [seg.__dict__ for seg in self._segments]
+            return self._segments[0].to_json_obj()
+        return [seg.to_json_obj() for seg in self._segments]
 
 
 def _unescape(content: str) -> str:
@@ -55,7 +58,7 @@ def text(content: str) -> MessageSegment:
     return MessageSegment(type='text', data={'text': content})
 
 
-def at(qq: str, name: str = '') -> MessageSegment:
+def at(qq: int, name: str = '') -> MessageSegment:
     return MessageSegment(type='at', data={'qq': qq, 'name': name})
 
 
@@ -96,12 +99,20 @@ def parse_cq_message(msg: str) -> Message:
 
     def iter_segments() -> Iterable[MessageSegment]:
         for typ, data in iter_message():
-            if typ != 'text':
-                yield MessageSegment(type=typ, data={
-                    k: _unescape(v)
-                    for k, v in (x.lstrip().split('=', maxsplit=1) for x in data.split(','))
-                })
-            elif data:
-                yield text(_unescape(data))
+            if typ == 'text':
+                if data:
+                    yield text(_unescape(data))
+                continue
+
+            data = {
+                k: _unescape(v)
+                for k, v in (x.lstrip().split('=', maxsplit=1) for x in data.split(','))
+            } if data else {}
+
+            if typ == 'at':
+                yield at(int(data['qq']), data.get('name', ''))
+                continue
+
+            yield MessageSegment(typ, data)
 
     return Message(*iter_segments())
