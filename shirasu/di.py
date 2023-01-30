@@ -1,5 +1,4 @@
 import inspect
-import functools
 from typing import Any, Callable, Awaitable, TypeVar
 
 
