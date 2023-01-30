@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 logger.configure(
     handlers=[{
         'sink': sys.stdout,
-        'level': 'TRACE',
+        'level': 'DEBUG',
         'format': '<green>{time:YY-MM-DD HH:mm:ss}</green> | '
                   '<level>{level: <8}</level> | '
                   '<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - '
