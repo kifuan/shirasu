@@ -1,5 +1,4 @@
-from ..addon import Addon, command
-from ..context import Context
+from shirasu import Context, Addon, command
 
 
 echo = Addon(
