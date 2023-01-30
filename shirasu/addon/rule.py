@@ -1,10 +1,11 @@
 import re
 import asyncio
 import operator
-from typing import Union, Callable, Awaitable
+from typing import cast, Union, Callable, Awaitable
 
 from ..di import di
-from ..context import Context
+from ..event import Event, MessageEvent, NoticeEvent
+from ..config import GlobalConfig
 
 
 class Rule:
@@ -37,6 +38,17 @@ class Rule:
         return await self._handler()
 
 
+def message() -> Rule:
+    """
+    The rule to match message events.
+    :return: the rule.
+    """
+
+    async def handler(event: Event) -> bool:
+        return event.post_type == 'message'
+    return Rule(handler)
+
+
 def command(cmd: str) -> Rule:
     """
     The rule to match certain command.
@@ -44,10 +56,10 @@ def command(cmd: str) -> Rule:
     :return: the rule.
     """
 
-    async def handler(ctx: Context) -> bool:
-        return ctx.match_command(cmd)
+    async def handler(event: MessageEvent, global_config: GlobalConfig) -> bool:
+        return event.match_command(cmd, global_config.command_start)
 
-    return Rule(handler)
+    return message() & Rule(handler)
 
 
 def regex(r: Union[str, re.Pattern]) -> Rule:
@@ -60,10 +72,10 @@ def regex(r: Union[str, re.Pattern]) -> Rule:
     if isinstance(r, str):
         r = re.compile(r)
 
-    async def handler(ctx: Context) -> bool:
-        return bool(r.match(ctx.message.plain_text))  # type: ignore
+    async def handler(event: MessageEvent) -> bool:
+        return bool(r.match(event.message.plain_text))  # type: ignore
 
-    return Rule(handler)
+    return message() & Rule(handler)
 
 
 def notice(notice_type: str) -> Rule:
@@ -73,7 +85,9 @@ def notice(notice_type: str) -> Rule:
     :return the rule.
     """
 
-    async def handler(ctx: Context) -> bool:
-        return ctx.notice == notice_type
+    async def handler(event: Event) -> bool:
+        if event.post_type != 'notice':
+            return False
+        return cast(NoticeEvent, event).notice_type == notice_type
 
     return Rule(handler)

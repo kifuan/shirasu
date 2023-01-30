@@ -10,8 +10,8 @@ from .di import di
 from .addon import AddonPool
 from .config import load_config, GlobalConfig
 from .logger import logger
-from .context import Context
 from .util import FutureTable, retry
+from .event import Event, MessageEvent, NoticeEvent, RequestEvent
 
 
 class ActionFailedError(Exception):
@@ -30,25 +30,22 @@ class Client:
         self._ws = ws
         self._futures = FutureTable()
         self._tasks: set[asyncio.Task] = set()
-        self._ctx: Context | None = None
+        self._event: Event | None = None
         self._global_config = global_config
-        di.provide('ctx', self._provide_context, check_duplicate=False)
         di.provide('global_config', self._provide_global_config, check_duplicate=False)
-
-    @property
-    def global_config(self) -> GlobalConfig:
-        return self._global_config
-
-    async def _provide_context(self) -> Context:
-        assert self._ctx is not None
-        return self._ctx
+        di.provide('event', self._provide_event, check_duplicate=False)
+        di.provide('client', self._provide_client, check_duplicate=False)
 
     async def _provide_global_config(self) -> GlobalConfig:
         return self._global_config
 
-    async def _handle(self, data: dict[str, Any]) -> None:
-        self._ctx = Context(self, data)
+    async def _provide_event(self) -> Event:
+        return self._event
 
+    async def _provide_client(self) -> 'Client':
+        return self
+
+    async def _handle(self, data: dict[str, Any]) -> None:
         if echo := data.get('echo'):
             self._futures.set(int(echo), data)
             return
@@ -57,8 +54,18 @@ class Client:
         if post_type == 'meta_event':
             return
 
-        if message := data.get('message'):
-            logger.info(f'Received message {message}')
+        logger.info(f'Received event {data}')
+
+        self._event = None
+        if post_type == 'message':
+            self._event = MessageEvent(data)
+        elif post_type == 'request':
+            self._event = RequestEvent(data)
+        elif post_type == 'notice':
+            self._event = NoticeEvent(data)
+        else:
+            logger.warning(f'Ignoring unknown event {post_type}.')
+            return
 
         await asyncio.gather(*(p.do_receive() for p in AddonPool()))
 

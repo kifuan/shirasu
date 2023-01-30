@@ -1,6 +1,11 @@
 from .logger import logger as logger
 from .client import Client as Client
-from .context import Context as Context
+from .event import (
+    Event as Event,
+    NoticeEvent as NoticeEvent,
+    RequestEvent as RequestEvent,
+    MessageEvent as MessageEvent,
+)
 from .addon import (
     Addon as Addon,
     AddonPool as AddonPool,
@@ -30,7 +35,10 @@ from .message import (
 __all__ = [
     'logger',
     'Client',
-    'Context',
+    'Event',
+    'MessageEvent',
+    'RequestEvent',
+    'NoticeEvent',
     'Addon',
     'AddonPool',
     'Rule',
