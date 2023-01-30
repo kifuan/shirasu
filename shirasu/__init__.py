@@ -1,10 +1,13 @@
 from .logger import logger as logger
-from .client import Client as Client
 from .event import (
     Event as Event,
     NoticeEvent as NoticeEvent,
     RequestEvent as RequestEvent,
     MessageEvent as MessageEvent,
+    mock_event as mock_event,
+    mock_notice_event as mock_notice_event,
+    mock_message_event as mock_message_event,
+    mock_request_event as mock_request_event,
 )
 from .addon import (
     Addon as Addon,
@@ -31,14 +34,26 @@ from .message import (
     json as json,
 )
 
+from .client import (
+    Client as Client,
+    OneBotClient as OneBotClient,
+    MockClient as MockClient,
+)
+
 
 __all__ = [
     'logger',
     'Client',
+    'OneBotClient',
+    'MockClient',
     'Event',
     'MessageEvent',
     'RequestEvent',
     'NoticeEvent',
+    'mock_event',
+    'mock_message_event',
+    'mock_request_event',
+    'mock_notice_event',
     'Addon',
     'AddonPool',
     'Rule',

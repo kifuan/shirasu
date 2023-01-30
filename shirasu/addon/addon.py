@@ -49,12 +49,19 @@ class Addon:
 
         return wrapper
 
+    async def do_match(self) -> bool:
+        if not self._rule_receiver:
+            logger.warning(f'Attempted to match addon {self._name} when the rule is absent.')
+            return False
+        rule, _ = self._rule_receiver
+        return await rule.match()
+
     async def do_receive(self) -> None:
         if not self._rule_receiver:
-            logger.warning(f'Attempted to receive for addon {self._name} when receiver and rule is absent.')
+            logger.warning(f'Attempted to receive for addon {self._name} when the receiver is absent.')
             return
 
-        async def provide_config(global_config: GlobalConfig) -> Any:
+        async def _provide_config(global_config: GlobalConfig) -> Any:
             if self._config_model is None:
                 return None
 
@@ -63,11 +70,7 @@ class Addon:
             namespace = AddonPool().get_namespace(self)
             return self._config_model.parse_obj(global_config.addons.get(namespace, {}))
 
-        di.provide('config', provide_config, check_duplicate=False)
+        di.provide('config', _provide_config, check_duplicate=False)
 
-        rule, receiver = self._rule_receiver
-        if not await rule.match():
-            return
-
-        logger.info(f'Matched addon {self._name}.')
+        _, receiver = self._rule_receiver
         await receiver()

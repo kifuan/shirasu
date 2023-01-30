@@ -3,10 +3,9 @@ from typing import Iterator
 
 from .addon import Addon
 from ..logger import logger
-from ..util import SingletonMeta
 
 
-class AddonPool(metaclass=SingletonMeta):
+class AddonPool:
     def __init__(self) -> None:
         self._addons: dict[str, Addon] = {}
 
