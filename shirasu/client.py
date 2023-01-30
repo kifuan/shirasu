@@ -6,6 +6,7 @@ from websockets.exceptions import ConnectionClosedError
 from websockets.legacy.client import connect, WebSocketClientProtocol
 
 from .di import di
+from .addon import AddonPool
 from .logger import logger
 from .context import Context
 from .internal import FutureTable, retry
@@ -28,7 +29,7 @@ class Client:
         self._futures = FutureTable()
         self._tasks: set[asyncio.Task] = set()
         self._data = {}
-        di.provide(self._provide_context, check_duplicate=False)
+        di.provide('ctx', self._provide_context, check_duplicate=False)
 
     async def _provide_context(self) -> Context:
         return Context(self, self._data)
@@ -45,12 +46,9 @@ class Client:
             logger.trace(f'Received meta event {data["meta_event_type"]}.')
             return
 
-        if post_type == 'message':
-            logger.trace(f'Received message {data}.')
-            return
-
-        if post_type == 'notice':
-            logger.trace(f'Received notice {data}.')
+        if post_type == 'message' or post_type == 'notice':
+            logger.info(data)
+            await asyncio.gather(*(p.do_receive() for p in AddonPool()))
             return
 
         logger.warning(f'Ignoring event {post_type}.')
@@ -81,7 +79,7 @@ class Client:
         """
 
         async with connect(url) as ws:
-            logger.info('Start listening.')
+            logger.success('Connected to websocket.')
             await cls(ws)._do_listen()
 
     async def call_action(self, action: str, timeout: float = 30., **params: Any) -> dict[str, Any]:

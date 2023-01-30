@@ -19,6 +19,14 @@ class Context:
     def group_id(self) -> int | None:
         return self._data.get('group_id')
 
+    @property
+    def notice(self) -> str:
+        return self._data.get('notice', '')
+
+    @property
+    def message(self) -> str:
+        return self._data.get('message', '')
+
     async def send_private_msg(self, user_id: int, message: Message) -> int:
         msg = await self._client.call_action(
             action='send_private_msg',
