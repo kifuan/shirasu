@@ -1,8 +1,9 @@
 import inspect
+import functools
 from typing import Any, Callable, Awaitable, TypeVar
 
 
-_T = TypeVar('_T')
+T = TypeVar('T')
 
 
 class DependencyError(Exception):
@@ -83,18 +84,18 @@ class DependencyInjector:
 
         return args
 
-    async def _apply(self, func: Callable[..., Awaitable[_T]], *apply_for: str) -> _T:
+    async def _apply(self, func: Callable[..., Awaitable[T]], *apply_for: str) -> T:
         injected_args = await self._inject_func_args(func, *apply_for)
         return await func(**injected_args)
 
-    def inject(self, func: Callable[..., Awaitable[_T]]) -> Callable[[], Awaitable[_T]]:
+    def inject(self, func: Callable[..., Awaitable[T]]) -> Callable[[], Awaitable[T]]:
         assert inspect.iscoroutinefunction(func), 'Injected function must be async.'
 
         async def wrapper():
             return await self._apply(func)
         return wrapper
 
-    def provide(self, name: str, func: Callable[..., Awaitable[_T]], *, check_duplicate: bool = True) -> None:
+    def provide(self, name: str, func: Callable[..., Awaitable[T]], *, check_duplicate: bool = True) -> None:
         assert inspect.iscoroutinefunction(func), 'Dependency provider must be async.'
 
         typ = inspect.signature(func).return_annotation
@@ -119,18 +120,18 @@ def inject():
     :return: the decorator to inject function.
     """
 
-    def deco(func: Callable[..., Awaitable[_T]]) -> Callable[[], Awaitable[_T]]:
+    def deco(func: Callable[..., Awaitable[T]]) -> Callable[[], Awaitable[T]]:
         return di.inject(func)
     return deco
 
 
-def provide(name: str, *, check_duplicate: bool = True) -> Callable[[Callable[..., Awaitable[_T]]], Callable[..., Awaitable[_T]]]:
+def provide(name: str, *, check_duplicate: bool = True) -> Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]:
     """
     Registers provider using decorator.
     :return: the decorator to register provider.
     """
 
-    def deco(func: Callable[..., Awaitable[_T]]) -> Callable[..., Awaitable[_T]]:
+    def deco(func: Callable[..., Awaitable[T]]) -> Callable[..., Awaitable[T]]:
         di.provide(name, func, check_duplicate=check_duplicate)
         return func
     return deco
