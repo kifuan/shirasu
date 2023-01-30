@@ -7,7 +7,7 @@ from shirasu import MockClient, AddonPool, mock_message_event
 async def test_echo():
     pool = AddonPool()
     pool.load_module('shirasu.addons.echo')
-    client = MockClient(pool=pool)
+    client = MockClient(pool)
 
     await client.post_event(mock_message_event('group', '/echo hello'))
 
