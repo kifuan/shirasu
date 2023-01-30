@@ -45,8 +45,7 @@ def command(cmd: str) -> Rule:
     """
 
     async def handler(ctx: Context) -> bool:
-        # TODO command.
-        return False
+        return ctx.match_command(cmd)
 
     return Rule(handler)
 
