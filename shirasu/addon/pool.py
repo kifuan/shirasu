@@ -1,5 +1,5 @@
 import importlib
-from typing import Iterable
+from typing import Iterator
 from itertools import chain
 
 from .addon import Addon
@@ -50,5 +50,5 @@ class AddonPool(metaclass=SingletonMeta):
 
         self.load(*addons, module=module_name)
 
-    def __iter__(self) -> Iterable[Addon]:
+    def __iter__(self) -> Iterator[Addon]:
         yield from chain.from_iterable(self._addons.values())
