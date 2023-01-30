@@ -87,14 +87,18 @@ class DependencyInjector:
         return await func(**injected_args)
 
     def inject(self, func: Callable[..., Awaitable[T]]) -> Callable[[], Awaitable[T]]:
-        assert inspect.iscoroutinefunction(func), 'Injected function must be async.'
+        assert inspect.iscoroutinefunction(func), 'injected function must be async.'
+        assert all(
+            not isinstance(p.annotation, str)
+            for p in inspect.signature(func).parameters.values()
+        ), 'annotations of injected parameters cannot be string.'
 
         async def wrapper():
             return await self._apply(func)
         return wrapper
 
     def provide(self, name: str, func: Callable[..., Awaitable[T]], *, check_duplicate: bool = True) -> None:
-        assert inspect.iscoroutinefunction(func), 'Dependency provider must be async.'
+        assert inspect.iscoroutinefunction(func), 'dependency provider must be async.'
 
         if check_duplicate and name in self._providers:
             raise DuplicateDependencyProviderError(name)
