@@ -13,7 +13,7 @@ class Addon:
     Note: functions decorated by `receive` will also be injected.
     """
 
-    def __init__(self, *, name: str, usage: str, description: str, config_model: Type[BaseModel]) -> None:
+    def __init__(self, *, name: str, usage: str, description: str, config_model: Type[BaseModel] | None = None) -> None:
         self._name = name
         self._usage = usage
         self._config_model = config_model
@@ -55,10 +55,14 @@ class Addon:
             return
 
         async def provide_config(global_config: GlobalConfig) -> Any:
+            if self._config_model is None:
+                return None
+
             # To reduce circular import.
             from .pool import AddonPool
             namespace = AddonPool().get_namespace(self)
             return self._config_model.parse_obj(global_config.addons.get(namespace, {}))
+
         di.provide('config', provide_config, check_duplicate=False)
 
         rule, receiver = self._rule_receiver
