@@ -4,7 +4,7 @@ from itertools import chain
 
 from .addon import Addon
 from ..logger import logger
-from ..internal import SingletonMeta
+from ..util import SingletonMeta
 
 
 DEFAULT_ADDON_MODULE_NAME = '@DEFAULT'

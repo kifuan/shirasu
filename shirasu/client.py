@@ -9,7 +9,7 @@ from .di import di
 from .addon import AddonPool
 from .logger import logger
 from .context import Context
-from .internal import FutureTable, retry
+from .util import FutureTable, retry
 
 
 class ActionFailedError(Exception):
