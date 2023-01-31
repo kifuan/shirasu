@@ -1,6 +1,5 @@
 import inspect
-import functools
-from typing import Any, Callable, Awaitable, TypeVar, overload
+from typing import Any, Callable, Awaitable, TypeVar, Literal, overload
 from .logger import logger
 
 
@@ -72,7 +71,9 @@ class DependencyInjector:
         # Check types of injected parameters.
         for dep, param in params.items():
             if not isinstance(val := args[dep], expected := param.annotation):
-                module_func_name = f'{inspect.getmodule(func).__name__}:{func.__name__}'
+                module = inspect.getmodule(func)
+                module_name = module.__name__ if module else '<unknown module>'
+                module_func_name = f'{module_name}:{func.__name__}'
                 logger.warning(f'type mismatch for parameter {dep} in function {module_func_name}, '
                                f'real type: {type(val).__name__}, expected: {expected.__name__}')
 
@@ -89,7 +90,7 @@ class DependencyInjector:
             self,
             func: Callable[..., Awaitable[T]],
             *,
-            sync: False = False,
+            sync: Literal[False] = False,
     ) -> Callable[[], Awaitable[T]]:
         """
         Injects async function.
@@ -103,7 +104,7 @@ class DependencyInjector:
             self,
             func: Callable[..., T],
             *,
-            sync: True,
+            sync: Literal[True],
     ) -> Callable[[], Awaitable[T]]:
         """
         Injects sync function.
@@ -131,7 +132,7 @@ class DependencyInjector:
             name: str,
             func: Callable[..., Awaitable[T]],
             *,
-            sync: False = False,
+            sync: Literal[False] = False,
             check_duplicate: bool = True
     ) -> None: ...
 
@@ -141,7 +142,7 @@ class DependencyInjector:
             name: str,
             func: Callable[..., T],
             *,
-            sync: True,
+            sync: Literal[True],
             check_duplicate: bool = True
     ) -> None: ...
 
@@ -169,11 +170,11 @@ The global dependency injector.
 
 
 @overload
-def inject(*, sync: False = False) -> Callable[[Callable[..., Awaitable[T]]], Callable[[], Awaitable[T]]]: ...
+def inject(*, sync: Literal[False] = False) -> Callable[[Callable[..., Awaitable[T]]], Callable[[], Awaitable[T]]]: ...
 
 
 @overload
-def inject(*, sync: True) -> Callable[[Callable[..., T]], Callable[[], Awaitable[T]]]: ...
+def inject(*, sync: Literal[True]) -> Callable[[Callable[..., T]], Callable[[], Awaitable[T]]]: ...
 
 
 def inject(*, sync: bool = False) -> Any:
@@ -183,22 +184,35 @@ def inject(*, sync: bool = False) -> Any:
     """
 
     def deco(func: Callable[..., Awaitable[T]]) -> Callable[[], Awaitable[T]]:
-        return di.inject(func, sync=sync)
+        return di.inject(func, sync=sync)  # type: ignore
     return deco
 
 
+@overload
 def provide(
         name: str,
         *,
-        sync: bool = False,
-        check_duplicate: bool = True
-) -> Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]:
+        sync: Literal[False] = False,
+        check_duplicate: bool = True,
+) -> Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]: ...
+
+
+@overload
+def provide(
+        name: str,
+        *,
+        sync: Literal[True],
+        check_duplicate: bool = True,
+) -> Callable[[Callable[..., T]], Callable[..., Awaitable[T]]]: ...
+
+
+def provide(name: str, *, sync: bool = False, check_duplicate: bool = True) -> Any:
     """
     Registers provider using decorator.
     :return: the decorator to register provider.
     """
 
     def deco(func: Callable[..., Awaitable[T]]) -> Callable[..., Awaitable[T]]:
-        di.provide(name, func, sync=sync, check_duplicate=check_duplicate)
+        di.provide(name, func, sync=sync, check_duplicate=check_duplicate)  # type: ignore
         return func
     return deco
