@@ -89,9 +89,9 @@ class DependencyInjector:
     def inject(self, func: Callable[..., Awaitable[T]]) -> Callable[[], Awaitable[T]]:
         assert inspect.iscoroutinefunction(func), 'injected function must be async.'
         assert all(
-            not isinstance(p.annotation, str)
+            isinstance(p.annotation, type)
             for p in inspect.signature(func).parameters.values()
-        ), 'annotations of injected parameters cannot be string.'
+        ), 'annotations of injected parameters must be real types.'
 
         async def wrapper():
             return await self._apply(func)
