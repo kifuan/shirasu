@@ -123,7 +123,11 @@ def inject():
     return deco
 
 
-def provide(name: str, *, check_duplicate: bool = True) -> Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]:
+def provide(
+        name: str,
+        *,
+        check_duplicate: bool = True
+) -> Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]:
     """
     Registers provider using decorator.
     :return: the decorator to register provider.

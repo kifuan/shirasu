@@ -19,6 +19,7 @@ mypy = "^0.991"
 types-ujson = "^5.7.0.0"
 pytest = "^7.2.1"
 pytest-asyncio = "^0.20.3"
+flake8 = "^6.0.0"
 
 [build-system]
 requires = ["poetry-core"]
