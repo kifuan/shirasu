@@ -5,7 +5,6 @@ from shirasu.di import (
     CircularDependencyError,
     UnknownDependencyError,
     DuplicateDependencyProviderError,
-    InvalidDependencyError,
 )
 
 
@@ -15,11 +14,6 @@ YEAR = 1883
 
 async def provide_name(year: int) -> str:
     assert year == YEAR
-    return NAME
-
-
-async def provide_name_invalid(year: str) -> str:
-    pytest.fail(f'Failed because the type of year {type(year)} is wrong')
     return NAME
 
 
@@ -65,15 +59,6 @@ async def test_unknown():
     di.provide('name', provide_name)
     di.provide('year', provide_year_unknown)
     with pytest.raises(UnknownDependencyError):
-        await di.inject(user)()
-
-
-@pytest.mark.asyncio
-async def test_invalid():
-    di = DependencyInjector()
-    di.provide('name', provide_name_invalid)
-    di.provide('year', provide_year)
-    with pytest.raises(InvalidDependencyError):
         await di.inject(user)()
 
 

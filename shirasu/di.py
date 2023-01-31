@@ -1,5 +1,6 @@
 import inspect
 from typing import Any, Callable, Awaitable, TypeVar
+from .logger import logger
 
 
 T = TypeVar('T')
@@ -31,15 +32,6 @@ class CircularDependencyError(DependencyError):
 
     def __init__(self, deps: list[str]) -> None:
         super().__init__(deps, 'circular dependencies')
-
-
-class InvalidDependencyError(DependencyError):
-    """
-    Invalid dependency, which means type mismatch.
-    """
-
-    def __init__(self, deps: list[str]) -> None:
-        super().__init__(deps, 'wrong dependency types')
 
 
 class DuplicateDependencyProviderError(DependencyError):
@@ -77,8 +69,11 @@ class DependencyInjector:
         }
 
         # Check types of injected parameters.
-        if invalid_deps := [dep for dep, param in params.items() if not isinstance(args[dep], param.annotation)]:
-            raise InvalidDependencyError(invalid_deps)
+        for dep, param in params.items():
+            if not isinstance(val := args[dep], expected := param.annotation):
+                module_func_name = f'{inspect.getmodule(func).__name__}:{func.__name__}'
+                logger.warning(f'type mismatch for parameter {dep} in function {module_func_name}, '
+                               f'real type: {type(val).__name__}, expected: {expected.__name__}')
 
         return args
 
@@ -88,10 +83,6 @@ class DependencyInjector:
 
     def inject(self, func: Callable[..., Awaitable[T]]) -> Callable[[], Awaitable[T]]:
         assert inspect.iscoroutinefunction(func), 'injected function must be async.'
-        assert all(
-            isinstance(p.annotation, type)
-            for p in inspect.signature(func).parameters.values()
-        ), 'annotations of injected parameters must be real types.'
 
         async def wrapper():
             return await self._apply(func)
