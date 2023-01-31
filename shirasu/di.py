@@ -1,5 +1,6 @@
 import inspect
-from typing import Any, Callable, Awaitable, TypeVar
+import functools
+from typing import Any, Callable, Awaitable, TypeVar, overload
 from .logger import logger
 
 
@@ -50,7 +51,7 @@ class DependencyInjector:
     """
 
     def __init__(self) -> None:
-        self._providers: dict[str, Callable[..., Awaitable[Any]]] = {}
+        self._providers: dict[str, Callable[..., Awaitable[T]]] = {}
 
     async def _inject_func_args(self, func: Callable[..., Awaitable[Any]], *inject_for: str) -> dict[str, Any]:
         params = inspect.signature(func).parameters
@@ -77,19 +78,83 @@ class DependencyInjector:
 
         return args
 
-    async def _apply(self, func: Callable[..., Awaitable[T]], *apply_for: str) -> T:
+    async def _apply(self, func: Callable[..., Any], *apply_for: str) -> Any:
         injected_args = await self._inject_func_args(func, *apply_for)
-        return await func(**injected_args)
+        if inspect.iscoroutine(result := func(**injected_args)):
+            result = await result
+        return result
 
-    def inject(self, func: Callable[..., Awaitable[T]]) -> Callable[[], Awaitable[T]]:
-        assert inspect.iscoroutinefunction(func), 'injected function must be async.'
+    @overload
+    def inject(
+            self,
+            func: Callable[..., Awaitable[T]],
+            *,
+            sync: False = False,
+    ) -> Callable[[], Awaitable[T]]:
+        """
+        Injects async function.
+        :param func: the async function to inject.
+        :param sync: the mark.
+        :return: the injected function.
+        """
+
+    @overload
+    def inject(
+            self,
+            func: Callable[..., T],
+            *,
+            sync: True,
+    ) -> Callable[[], Awaitable[T]]:
+        """
+        Injects sync function.
+        :param func: the sync function to inject.
+        :param sync: the mark.
+        :return: the injected function.
+        """
+
+    def inject(
+            self,
+            func: Callable[..., Any],
+            *,
+            sync: bool = False
+    ) -> Callable[[], Any]:
+        if not sync:
+            assert inspect.iscoroutinefunction(func), 'you lied.'
 
         async def wrapper():
             return await self._apply(func)
         return wrapper
 
-    def provide(self, name: str, func: Callable[..., Awaitable[T]], *, check_duplicate: bool = True) -> None:
-        assert inspect.iscoroutinefunction(func), 'dependency provider must be async.'
+    @overload
+    def provide(
+            self,
+            name: str,
+            func: Callable[..., Awaitable[T]],
+            *,
+            sync: False = False,
+            check_duplicate: bool = True
+    ) -> None: ...
+
+    @overload
+    def provide(
+            self,
+            name: str,
+            func: Callable[..., T],
+            *,
+            sync: True,
+            check_duplicate: bool = True
+    ) -> None: ...
+
+    def provide(
+            self,
+            name: str,
+            func: Callable[..., Any],
+            *,
+            sync: bool = False,
+            check_duplicate: bool = True
+    ) -> None:
+        if not sync:
+            assert inspect.iscoroutinefunction(func), 'you lied.'
 
         if check_duplicate and name in self._providers:
             raise DuplicateDependencyProviderError(name)
@@ -103,20 +168,29 @@ The global dependency injector.
 """
 
 
-def inject():
+@overload
+def inject(*, sync: False = False) -> Callable[[Callable[..., Awaitable[T]]], Callable[[], Awaitable[T]]]: ...
+
+
+@overload
+def inject(*, sync: True) -> Callable[[Callable[..., T]], Callable[[], Awaitable[T]]]: ...
+
+
+def inject(*, sync: bool = False) -> Any:
     """
     Injects function using decorator.
     :return: the decorator to inject function.
     """
 
     def deco(func: Callable[..., Awaitable[T]]) -> Callable[[], Awaitable[T]]:
-        return di.inject(func)
+        return di.inject(func, sync=sync)
     return deco
 
 
 def provide(
         name: str,
         *,
+        sync: bool = False,
         check_duplicate: bool = True
 ) -> Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]:
     """
@@ -125,6 +199,6 @@ def provide(
     """
 
     def deco(func: Callable[..., Awaitable[T]]) -> Callable[..., Awaitable[T]]:
-        di.provide(name, func, check_duplicate=check_duplicate)
+        di.provide(name, func, sync=sync, check_duplicate=check_duplicate)
         return func
     return deco
