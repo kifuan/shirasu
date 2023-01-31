@@ -42,7 +42,7 @@ class Client(ABC):
     async def _provide_global_config(self) -> GlobalConfig:
         return self._global_config
 
-    async def _provide_event(self) -> Event:
+    async def _provide_event(self) -> Event | None:
         return self.curr_event
 
     async def _provide_pool(self) -> AddonPool:

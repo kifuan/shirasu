@@ -104,15 +104,15 @@ def parse_cq_message(msg: str) -> Message:
                     yield text(_unescape(data))
                 continue
 
-            data = {
+            segment_data = {
                 k: _unescape(v)
                 for k, v in (x.lstrip().split('=', maxsplit=1) for x in data.split(','))
             } if data else {}
 
             if typ == 'at':
-                yield at(int(data['qq']), data.get('name', ''))
+                yield at(int(segment_data['qq']), segment_data.get('name', ''))
                 continue
 
-            yield MessageSegment(typ, data)
+            yield MessageSegment(typ, segment_data)
 
     return Message(*iter_segments())
