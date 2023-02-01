@@ -54,7 +54,7 @@ class DependencyInjector:
     def __init__(self) -> None:
         self._providers: dict[str, Callable[..., AT]] = {}
 
-    async def _inject_func_args(self, func: Callable[..., Awaitable[Any]], *inject_for: str) -> dict[str, Any]:
+    async def _inject_func_args(self, func: Callable[..., AT], *inject_for: str) -> dict[str, Any]:
         params = inspect.signature(func).parameters
 
         # Check unknown dependencies.
@@ -87,7 +87,7 @@ class DependencyInjector:
 
         return args
 
-    async def _apply(self, func: Callable[..., Any], *apply_for: str) -> Any:
+    async def _apply(self, func: Callable[..., AT], *apply_for: str) -> AT:
         injected_args = await self._inject_func_args(func, *apply_for)
         return await func(**injected_args)
 
