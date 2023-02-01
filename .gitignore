@@ -2,6 +2,6 @@
 .idea
 .pytest_cache
 dist
-app.py
 *.json
 *.yml
+*.py
