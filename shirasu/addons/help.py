@@ -1,7 +1,7 @@
 from shirasu import Client, Addon, AddonPool, MessageEvent, command
 
 
-echo = Addon(
+help_addon = Addon(
     name='help',
     usage='/help addon_name',
     description='Prints usage description for certain addon.',
@@ -15,7 +15,7 @@ Description: {description}
 '''.strip()
 
 
-@echo.receive(command('help'))
+@help_addon.receive(command('help'))
 async def receive_echo(client: Client, pool: AddonPool, event: MessageEvent) -> None:
     name = event.arg
     if not name:
