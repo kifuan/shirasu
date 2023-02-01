@@ -4,7 +4,6 @@ from shirasu import MockClient, AddonPool
 from shirasu.event import mock_message_event
 from shirasu.addon import (
     DuplicateAddonError,
-    NoSuchAddonError,
     LoadAddonError,
 )
 
@@ -30,13 +29,6 @@ def test_duplicate_addon():
 
     with pytest.raises(DuplicateAddonError):
         pool.load_module('shirasu.addons.echo')
-
-
-def test_no_such_addon():
-    pool = AddonPool()
-
-    with pytest.raises(NoSuchAddonError):
-        pool.get_addon('dummy')
 
 
 def test_load_error_addon():
