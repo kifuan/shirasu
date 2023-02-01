@@ -5,6 +5,7 @@ from .rule import (
     command as command,
     notice as notice,
     regex as regex,
+    tome as tome,
 )
 from .exceptions import (
     AddonError,
@@ -20,6 +21,7 @@ __all__ = [
     'command',
     'notice',
     'regex',
+    'tome',
     'AddonError',
     'LoadAddonError',
     'DuplicateAddonError',

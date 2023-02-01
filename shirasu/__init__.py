@@ -12,6 +12,7 @@ from .addon import (
     command as command,
     notice as notice,
     regex as regex,
+    tome as tome,
 )
 from .message import (
     MessageSegment as MessageSegment,
@@ -47,6 +48,7 @@ __all__ = [
     'command',
     'notice',
     'regex',
+    'tome',
     'MessageSegment',
     'Message',
     'text',

@@ -1,6 +1,7 @@
 import pytest
 import asyncio
-from shirasu import MockClient, AddonPool
+from shirasu import MockClient, AddonPool, at
+from shirasu.event import MOCK_SELF_ID
 from shirasu.addon import (
     DuplicateAddonError,
     LoadAddonError,
@@ -44,3 +45,17 @@ async def test_square():
     await client.post_message('/square a')
     rejected_msg = await client.get_message_event()
     assert rejected_msg.is_rejected
+
+
+@pytest.mark.asyncio
+async def test_tome():
+    pool = AddonPool.from_modules('shirasu.addons.reject_tome')
+    client = MockClient(pool)
+
+    await client.post_message(at(MOCK_SELF_ID), message_type='group')
+    rejected_msg = await client.get_message_event()
+    assert rejected_msg.is_rejected
+
+    await client.post_message('hello')
+    rejected_private_msg = await client.get_message_event()
+    assert rejected_private_msg.is_rejected
