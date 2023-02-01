@@ -203,7 +203,7 @@ class OneBotClient(Client):
 class MockClient(Client):
     def __init__(self, pool: AddonPool, global_config: GlobalConfig | None = None):
         super().__init__(pool, global_config or GlobalConfig())
-        self._message_queue: Queue[MessageEvent] = Queue()
+        self._message_event_queue: Queue[MessageEvent] = Queue()
 
     async def post_event(self, event: Event) -> None:
         self.curr_event = event
@@ -218,7 +218,7 @@ class MockClient(Client):
             message: Message,
             is_rejected: bool,
     ) -> int:
-        await self._message_queue.put(mock_message_event(
+        await self._message_event_queue.put(mock_message_event(
             message_type=message_type,
             message=message,
             group_id=group_id,
@@ -227,5 +227,8 @@ class MockClient(Client):
         ))
         return -1
 
-    async def get_message(self, timeout: float = .1):
-        return await asyncio.wait_for(self._message_queue.get(), timeout)
+    async def get_message_event(self, timeout: float = .1) -> MessageEvent:
+        return await asyncio.wait_for(self._message_event_queue.get(), timeout)
+
+    async def get_message(self, timeout: float = .1) -> Message:
+        return (await self.get_message_event(timeout)).message
