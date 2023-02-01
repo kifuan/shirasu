@@ -59,3 +59,7 @@ async def test_tome():
     await client.post_message('hello')
     rejected_private_msg = await client.get_message_event()
     assert rejected_private_msg.is_rejected
+
+    await client.post_message('hello', message_type='group')
+    with pytest.raises(asyncio.TimeoutError):
+        await client.get_message()
