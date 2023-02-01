@@ -58,7 +58,7 @@ def command(cmd: str) -> Rule:
     """
 
     def handler(event: MessageEvent, global_config: GlobalConfig) -> bool:
-        return event.match_command(cmd, global_config.command_start)
+        return event.match_command(cmd, global_config.command_prefixes)
 
     return message() & Rule(handler)
 

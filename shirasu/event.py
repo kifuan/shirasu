@@ -37,9 +37,9 @@ class MessageEvent(Event):
             **data,
         )
 
-    def match_command(self, cmd: str, command_start: list[str]) -> bool:
+    def match_command(self, cmd: str, command_prefixes: list[str]) -> bool:
         t = self.message.plain_text
-        for start in command_start:
+        for start in command_prefixes:
             prefix = start + cmd
             if t.startswith(prefix):
                 self.arg = t.removeprefix(prefix).strip()
