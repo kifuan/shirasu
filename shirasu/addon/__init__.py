@@ -10,7 +10,6 @@ from .exceptions import (
     AddonError,
     LoadAddonError,
     DuplicateAddonError,
-    NoSuchAddonError,
 )
 
 
@@ -24,5 +23,4 @@ __all__ = [
     'AddonError',
     'LoadAddonError',
     'DuplicateAddonError',
-    'NoSuchAddonError',
 ]
