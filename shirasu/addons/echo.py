@@ -4,7 +4,7 @@ from shirasu import Client, Addon, MessageEvent, command
 echo = Addon(
     name='echo',
     usage='/echo text',
-    description='Echo what you send.',
+    description='Sends your text back.',
 )
 
 
