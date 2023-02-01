@@ -4,10 +4,6 @@ from .event import (
     NoticeEvent as NoticeEvent,
     RequestEvent as RequestEvent,
     MessageEvent as MessageEvent,
-    mock_event as mock_event,
-    mock_notice_event as mock_notice_event,
-    mock_message_event as mock_message_event,
-    mock_request_event as mock_request_event,
 )
 from .addon import (
     Addon as Addon,
@@ -16,11 +12,6 @@ from .addon import (
     command as command,
     notice as notice,
     regex as regex,
-)
-from .di import (
-    di as di,
-    inject as inject,
-    provide as provide,
 )
 from .message import (
     MessageSegment as MessageSegment,
@@ -50,19 +41,12 @@ __all__ = [
     'MessageEvent',
     'RequestEvent',
     'NoticeEvent',
-    'mock_event',
-    'mock_message_event',
-    'mock_request_event',
-    'mock_notice_event',
     'Addon',
     'AddonPool',
     'Rule',
     'command',
     'notice',
     'regex',
-    'di',
-    'provide',
-    'inject',
     'MessageSegment',
     'Message',
     'text',
