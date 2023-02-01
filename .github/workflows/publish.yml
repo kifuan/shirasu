@@ -32,11 +32,10 @@ jobs:
           cache: 'poetry'
 
       - name: Install dependencies
-        run: poetry install
+        run: poetry install --only main
 
       - name: Build with poetry
-        run: |
-          poetry build
+        run: poetry build
 
       - name: Publish to pypi
         uses: pypa/gh-action-pypi-publish@release/v1
