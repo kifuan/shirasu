@@ -3,6 +3,11 @@ from typing import Iterator
 
 from .addon import Addon
 from ..logger import logger
+from .exceptions import (
+    NoSuchAddonError,
+    LoadAddonError,
+    DuplicateAddonError,
+)
 
 
 class AddonPool:
@@ -16,8 +21,7 @@ class AddonPool:
         """
 
         if addon.name in self._addons:
-            logger.warning(f'Duplicate addon name {addon.name}, skipping.')
-            return
+            raise DuplicateAddonError(addon)
 
         self._addons[addon.name] = addon
         logger.success(f'Loaded addon {addon.name}.')
@@ -28,32 +32,22 @@ class AddonPool:
         :param module_name: the module name.
         """
 
-        if module_name in self._addons:
-            logger.warning(f'Attempted to load duplicate module {module_name}.')
-            return
-
         try:
             module = importlib.import_module(module_name)
-        except ImportError:
-            logger.error(f'Failed to load module {module_name}.')
-            return
+        except ImportError as e:
+            raise LoadAddonError(f'failed to load addons in module {module_name}') from e
 
         addons = [p for p in module.__dict__.values() if isinstance(p, Addon)]
         if not addons:
-            logger.warning(f'No addons in module {module_name}, skipping.')
-            return
+            raise LoadAddonError(f'no addons in module {module_name}')
 
-        addon = addons[0]
-
-        if len(addons) > 1:
-            logger.warning(f'Too many addons in single module {module_name}, load {addon.name} only.')
-
-        self.load(addon)
+        for addon in addons:
+            self.load(addon)
 
     def get_addon(self, name: str) -> Addon:
-        if addon := self.get_addon(name):
+        if addon := self._addons.get(name):
             return addon
-        raise NameError(f'no addon for namespace {name}')
+        raise NoSuchAddonError(name)
 
     def __iter__(self) -> Iterator[Addon]:
         yield from self._addons.values()

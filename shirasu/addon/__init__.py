@@ -6,6 +6,12 @@ from .rule import (
     notice as notice,
     regex as regex,
 )
+from .exceptions import (
+    AddonError,
+    LoadAddonError,
+    DuplicateAddonError,
+    NoSuchAddonError,
+)
 
 
 __all__ = [
@@ -15,4 +21,8 @@ __all__ = [
     'command',
     'notice',
     'regex',
+    'AddonError',
+    'LoadAddonError',
+    'DuplicateAddonError',
+    'NoSuchAddonError',
 ]
