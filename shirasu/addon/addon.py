@@ -54,7 +54,7 @@ class Addon:
             logger.warning(f'Duplicate rule and receiver for addon {self._name}, the old one will be overwritten.')
 
         def wrapper(handler: Any) -> Any:
-            handler = di.inject(handler, sync=not asyncio.iscoroutinefunction(handler))
+            handler = di.inject(handler, sync=not asyncio.iscoroutinefunction(handler))  # type: ignore
             self._rule_receiver = rule, handler
             return handler
 
