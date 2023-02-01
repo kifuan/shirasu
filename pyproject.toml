@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "shirasu"
-version = "0.0.3"
+version = "1.0.0"
 description = "A simple bot framework to study the principles, based on OneBot v11."
 authors = ["kifuan <kifuan@foxmail.com>"]
 license = "MIT"
