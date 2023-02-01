@@ -1,12 +1,12 @@
 import asyncio
+import functools
 from typing import Type, Callable, Any
-from functools import wraps
 from ..logger import logger_deco
 
 
 def retry(*, timeout: float, messages: dict[Type[BaseException], str]) -> Callable[[Any], Any]:
     def wrapper(f: Any) -> Any:
-        @wraps(f)
+        @functools.wraps(f)
         async def inner(*args: Any, **kwargs: Any) -> Any:
             while True:
                 try:
