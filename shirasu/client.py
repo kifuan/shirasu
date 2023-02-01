@@ -34,22 +34,10 @@ class Client(ABC):
         self.curr_event: Event | None = None
         self._pool = pool
         self._global_config = global_config
-        di.provide('global_config', self._provide_global_config, check_duplicate=False)
-        di.provide('client', self._provide_client, check_duplicate=False)
-        di.provide('event', self._provide_event, check_duplicate=False)
-        di.provide('pool', self._provide_pool, check_duplicate=False)
-
-    async def _provide_global_config(self) -> GlobalConfig:
-        return self._global_config
-
-    async def _provide_event(self) -> Event | None:
-        return self.curr_event
-
-    async def _provide_pool(self) -> AddonPool:
-        return self._pool
-
-    async def _provide_client(self) -> 'Client':
-        return self
+        di.provide('client', lambda: self, sync=True, check_duplicate=False)
+        di.provide('pool', lambda: self._pool, sync=True, check_duplicate=False)
+        di.provide('event', lambda: self.curr_event, sync=True, check_duplicate=False)
+        di.provide('global_config', lambda: self._global_config, sync=True, check_duplicate=False)
 
     @abstractmethod
     async def send_msg(
