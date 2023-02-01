@@ -18,7 +18,7 @@ logger.configure(
 )
 
 
-def logger_deco(f: Any) -> "Logger":
+def logger_deco(f: Any) -> 'Logger':
     return logger.patch(lambda r: r.update(
         function=f.__name__,
         name=f.__module__,
