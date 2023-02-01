@@ -5,7 +5,6 @@ from .rule import Rule
 from ..di import di
 from ..logger import logger
 from ..config import GlobalConfig
-from .exceptions import NoConfigModelError
 
 
 class Addon:
@@ -14,7 +13,16 @@ class Addon:
     Note: functions decorated by `receive` will also be injected.
     """
 
-    def __init__(self, *, name: str, usage: str, description: str, config_model: Type[BaseModel] | None = None) -> None:
+    def __init__(self, *, name: str, usage: str, description: str, config_model: Type[BaseModel] = BaseModel) -> None:
+        """
+        Initializes an addon. If the config model is absent, it will use `pydantic.BaseModel` by
+        default, from which you cannot get any custom properties.
+        :param name: the name of the addon.
+        :param usage: the usage of the addon.
+        :param description: the description of the addon.
+        :param config_model: optional, the pydantic model of the addon's configurations.
+        """
+
         self._name = name
         self._usage = usage
         self._config_model = config_model
@@ -35,9 +43,9 @@ class Addon:
 
     def receive(self, rule: Rule) -> Callable[[Callable[..., Awaitable[None]]], Callable[[], Awaitable[None]]]:
         """
-        Defines a receiver handler with itself injected.
+        Defines a receiver with itself injected.
         :param rule: the rule of the receiver.
-        :return: injected receiver handler.
+        :return: injected receiver.
         """
 
         if self._rule_receiver:
@@ -51,6 +59,12 @@ class Addon:
         return wrapper
 
     async def do_match(self) -> bool:
+        """
+        Applies the matcher to match whether this addon is matched.
+        It will log a warning message if the matcher is absent.
+        :return: whether it is matched.
+        """
+
         if not self._rule_receiver:
             logger.warning(f'Attempted to match addon {self._name} when the rule is absent.')
             return False
@@ -59,13 +73,16 @@ class Addon:
         return await rule.match()
 
     async def do_receive(self) -> None:
+        """
+        Applies the receiver to receive events.
+        It will log a warning message if the receiver is absent.
+        """
+
         if not self._rule_receiver:
             logger.warning(f'Attempted to receive for addon {self._name} when the receiver is absent.')
             return
 
         def _provide_config(global_config: GlobalConfig) -> Any:
-            if self._config_model is None:
-                raise NoConfigModelError(self)
             return self._config_model.parse_obj(global_config.addons.get(self._name, {}))
 
         di.provide('config', _provide_config, sync=True, check_duplicate=False)

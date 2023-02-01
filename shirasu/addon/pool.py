@@ -11,7 +11,15 @@ from .exceptions import (
 
 
 class AddonPool:
+    """
+    The addon pool to load and get addons.
+    """
+
     def __init__(self) -> None:
+        """
+        Initializes the addon pool.
+        """
+
         self._addons: dict[str, Addon] = {}
 
     def load(self, addon: Addon) -> None:
@@ -45,6 +53,13 @@ class AddonPool:
             self.load(addon)
 
     def get_addon(self, name: str) -> Addon:
+        """
+        Gets the addon by its name.
+        If the name is not in the pool, it will raise `NoSuchAddonError`.
+        :param name: the name of the addon.
+        :return: the addon.
+        """
+
         if addon := self._addons.get(name):
             return addon
         raise NoSuchAddonError(name)

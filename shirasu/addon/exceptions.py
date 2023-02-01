@@ -30,13 +30,3 @@ class NoSuchAddonError(AddonError):
     """
     Raises when attempting to get an addon which is not existed.
     """
-
-
-class NoConfigModelError(AddonError):
-    """
-    Raises when attempting to get the config when the model is absent.
-    """
-
-    def __init__(self, addon: 'Addon'):
-        super().__init__(f'attempted to get config for {addon.name} when its model is absent')
-        self.addon = addon
