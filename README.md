@@ -182,7 +182,6 @@ To start with, you should install `pytest` and `pytest-asyncio` as our framework
 
 ```python
 import pytest
-import asyncio
 from shirasu import MockClient, AddonPool
 
 
