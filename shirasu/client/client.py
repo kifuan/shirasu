@@ -25,6 +25,12 @@ class Client(ABC):
     """
 
     def __init__(self, pool: AddonPool, global_config: GlobalConfig):
+        """
+        Initializes the client.
+        :param pool: the addon pool.
+        :param global_config: the global configurations.
+        """
+
         self.curr_event: Event | None = None
         self._pool = pool
         self._global_config = global_config
@@ -32,6 +38,19 @@ class Client(ABC):
         di.provide('pool', lambda: self._pool, sync=True, check_duplicate=False)
         di.provide('event', lambda: self.curr_event, sync=True, check_duplicate=False)
         di.provide('global_config', lambda: self._global_config, sync=True, check_duplicate=False)
+
+    @abstractmethod
+    async def call_action(self, action: str, **params: Any) -> dict[str, Any]:
+        """
+        Calls the client API. It does not work for `MockClient`, so you cannot
+        test addons depending on this method.
+
+        :param action: the action.
+        :param params: the parameters.
+        :return: the action result.
+        """
+
+        raise NotImplementedError()
 
     @abstractmethod
     async def send_msg(
@@ -43,9 +62,27 @@ class Client(ABC):
             message: Message,
             is_rejected: bool,
     ) -> int:
+        """
+        Sends a message via client API.
+        :param message_type: the message type.
+        :param user_id: the user id.
+        :param group_id: the group id.
+        :param message: the message.
+        :param is_rejected: is the message rejected.
+        :return: the message id.
+        """
+
         raise NotImplementedError()
 
     async def send(self, message: Message | str | MessageSegment, *, is_rejected: bool = False) -> int:
+        """
+        Sends a message back. The `is_reject` parameter is useful for unit testing.
+        It is set to `True` when the input is invalid or something goes wrong.
+        :param message: the message to send.
+        :param is_rejected: is the message rejected.
+        :return: the message id.
+        """
+
         if not isinstance(self.curr_event, MessageEvent):
             logger.warning('Attempted to send message back when current event is not message event.')
             return -1

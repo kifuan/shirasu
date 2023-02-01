@@ -16,20 +16,18 @@ from ..message import Message
 
 
 class OneBotClient(Client):
+    """
+    The onebot client. Use classmethod `listen` to create a connection.
+    >>> await OneBotClient.listen(pool=...)
+    """
+
     def __init__(self, ws: WebSocketClientProtocol, pool: AddonPool, global_config: GlobalConfig):
         super().__init__(pool, global_config)
         self._ws = ws
         self._futures = FutureTable()
         self._tasks: set[asyncio.Task] = set()
 
-    async def _call_action(self, action: str, **params: Any) -> dict[str, Any]:
-        """
-        Calls action via websocket.
-        :param action: the action.
-        :param params: the params to call the action.
-        :return: the action result.
-        """
-
+    async def call_action(self, action: str, **params: Any) -> dict[str, Any]:
         logger.info(f'Calling action {action}.')
         future_id = self._futures.register()
         await self._ws.send(ujson.dumps({
@@ -108,7 +106,7 @@ class OneBotClient(Client):
             message: Message,
             is_rejected: bool,
     ) -> int:
-        res = await self._call_action(
+        res = await self.call_action(
             action='send_msg',
             message=message.to_json_obj(),
             user_id=user_id,

@@ -5,6 +5,10 @@ from pydantic import BaseModel
 
 
 class GlobalConfig(BaseModel):
+    """
+    The global configuration.
+    """
+
     ws: str = 'ws://127.0.0.1:8080'
     addons: dict[str, dict[str, Any]] = {}
     command_prefixes: list[str] = ['/']
