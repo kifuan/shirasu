@@ -1,12 +1,12 @@
 import asyncio
-from typing import Literal
+from typing import Literal, Any
 from asyncio.queues import Queue
 
 from .client import Client
 from ..addon import AddonPool
 from ..config import GlobalConfig
 from ..event import Event, MessageEvent, mock_message_event
-from ..message import Message
+from ..message import Message, MessageSegment
 
 
 class MockClient(Client):
@@ -17,6 +17,25 @@ class MockClient(Client):
     async def post_event(self, event: Event) -> None:
         self.curr_event = event
         await self.apply_addons()
+
+    async def post_message(
+            self,
+            message: Message | MessageSegment | str,
+            message_type: Literal['private', 'group'] = 'private',
+            **params: Any,
+    ) -> None:
+        """
+        Posts a message event.
+        :param message: the message content.
+        :param message_type: the message type, which is private by default.
+        :param params: extra parameters.
+        """
+
+        await self.post_event(mock_message_event(
+            message=message,
+            message_type=message_type,
+            **params,
+        ))
 
     async def send_msg(
             self,
