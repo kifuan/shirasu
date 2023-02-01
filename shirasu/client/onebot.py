@@ -33,7 +33,7 @@ class OneBotClient(Client):
         await self._ws.send(ujson.dumps({
             'action': action,
             'params': params,
-            'echo': future_id,
+            'echo': str(future_id),
         }))
 
         data = await self._futures.get(future_id, self._global_config.action_timeout)
