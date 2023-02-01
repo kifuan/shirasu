@@ -46,11 +46,12 @@ class Client(ABC):
             message_type: Literal['private', 'group'],
             user_id: int,
             group_id: int | None,
-            message: Message
+            message: Message,
+            is_rejected: bool,
     ) -> int:
         raise NotImplementedError()
 
-    async def send(self, message: Message | str | MessageSegment) -> int:
+    async def send(self, message: Message | str | MessageSegment, *, is_rejected: bool = False) -> int:
         if not isinstance(self.curr_event, MessageEvent):
             logger.warning('Attempted to send message back when current event is not message event.')
             return -1
@@ -65,7 +66,17 @@ class Client(ABC):
             user_id=self.curr_event.user_id,
             group_id=self.curr_event.group_id,
             message_type=self.curr_event.message_type,
+            is_rejected=is_rejected,
         )
+
+    async def reject(self, message: Message | MessageSegment | str) -> int:
+        """
+        Rejects with a message, it only works for `MockClient` when testing.
+        :param message: the message.
+        :return: the message id.
+        """
+
+        return await self.send(message, is_rejected=True)
 
     async def apply_addons(self) -> None:
         """
@@ -175,7 +186,8 @@ class OneBotClient(Client):
             message_type: Literal['private', 'group'],
             user_id: int,
             group_id: int | None,
-            message: Message
+            message: Message,
+            is_rejected: bool,
     ) -> int:
         res = await self._call_action(
             action='send_msg',
@@ -183,6 +195,7 @@ class OneBotClient(Client):
             user_id=user_id,
             group_id=group_id,
             message_type=message_type,
+            is_rejected=is_rejected,
         )
         return res['message_id']
 
@@ -202,13 +215,15 @@ class MockClient(Client):
             message_type: Literal['private', 'group'],
             user_id: int,
             group_id: int | None,
-            message: Message
+            message: Message,
+            is_rejected: bool,
     ) -> int:
         await self._message_queue.put(mock_message_event(
             message_type=message_type,
             message=message,
             group_id=group_id,
             user_id=user_id,
+            is_rejected=is_rejected,
         ))
         return -1
 

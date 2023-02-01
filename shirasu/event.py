@@ -27,6 +27,7 @@ class MessageEvent(Event):
         self.message: Message = params['parsed_message']
         self.user_id: int = params['user_id']
         self.group_id: int | None = params.get('group_id')
+        self.is_rejected: bool = bool(params.get('is_rejected'))
         self.arg = ''
 
     @classmethod
