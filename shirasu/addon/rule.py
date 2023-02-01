@@ -59,7 +59,6 @@ def command(cmd: str) -> Rule:
 
     def handler(event: MessageEvent, global_config: GlobalConfig) -> bool:
         return event.match_command(cmd, global_config.command_prefixes)
-
     return message() & Rule(handler)
 
 
@@ -75,7 +74,6 @@ def regex(r: Union[str, re.Pattern]) -> Rule:
 
     def handler(event: MessageEvent) -> bool:
         return bool(r.match(event.message.plain_text))  # type: ignore
-
     return message() & Rule(handler)
 
 

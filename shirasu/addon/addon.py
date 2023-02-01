@@ -60,6 +60,11 @@ class Addon:
 
         return wrapper
 
+    def _provide_config(self) -> None:
+        def provide(global_config: GlobalConfig) -> Any:
+            return self._config_model.parse_obj(global_config.addons.get(self._name, {}))
+        di.provide('config', provide, sync=True, check_duplicate=False)
+
     async def do_match(self) -> bool:
         """
         Applies the matcher to match whether this addon is matched.
@@ -71,6 +76,7 @@ class Addon:
             logger.warning(f'Attempted to match addon {self._name} when the rule is absent.')
             return False
 
+        self._provide_config()
         rule, _ = self._rule_receiver
         return await rule.match()
 
@@ -84,10 +90,6 @@ class Addon:
             logger.warning(f'Attempted to receive for addon {self._name} when the receiver is absent.')
             return
 
-        def _provide_config(global_config: GlobalConfig) -> Any:
-            return self._config_model.parse_obj(global_config.addons.get(self._name, {}))
-
-        di.provide('config', _provide_config, sync=True, check_duplicate=False)
-
+        self._provide_config()
         _, receiver = self._rule_receiver
         await receiver()
