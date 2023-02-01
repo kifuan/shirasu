@@ -8,6 +8,12 @@
 
 ## Usage
 
+Install `shirasu` first.
+
+```bash
+> pip install shirasu
+```
+
 To create a simple bot application, you should create a `.py` file containing the following code:
 
 ```python
