@@ -30,7 +30,7 @@ class OneBotClient(Client):
         :return: the action result.
         """
 
-        logger.info(f'Calling {action} with {params}')
+        logger.info(f'Calling action {action}.')
         future_id = self._futures.register()
         await self._ws.send(ujson.dumps({
             'action': action,
