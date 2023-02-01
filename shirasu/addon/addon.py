@@ -1,3 +1,4 @@
+import asyncio
 from typing import Callable, Awaitable, Any, Type
 from pydantic import BaseModel
 
@@ -43,7 +44,8 @@ class Addon:
 
     def receive(self, rule: Rule) -> Callable[[Callable[..., Awaitable[None]]], Callable[[], Awaitable[None]]]:
         """
-        Defines a receiver with itself injected.
+        Defines a receiver with itself injected. It detects whether your function is async
+        automatically, so you can use both async and sync receivers.
         :param rule: the rule of the receiver.
         :return: injected receiver.
         """
@@ -52,7 +54,7 @@ class Addon:
             logger.warning(f'Duplicate rule and receiver for addon {self._name}, the old one will be overwritten.')
 
         def wrapper(handler: Any) -> Any:
-            handler = di.inject(handler)
+            handler = di.inject(handler, sync=not asyncio.iscoroutinefunction(handler))
             self._rule_receiver = rule, handler
             return handler
 
