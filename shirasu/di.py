@@ -45,8 +45,8 @@ class DuplicateDependencyProviderError(DependencyError):
 
 class DependencyInjector:
     """
-    Dependency injector based on annotations.
-    Note: it does not support positional-only arguments.
+    Dependency injector based on parameter names.
+    Note: positional-only arguments are not supported.
     """
 
     def __init__(self) -> None:
