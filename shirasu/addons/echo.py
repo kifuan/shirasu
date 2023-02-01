@@ -9,5 +9,5 @@ echo = Addon(
 
 
 @echo.receive(command('echo'))
-async def receive_echo(client: Client, event: MessageEvent) -> None:
+async def handle_echo(client: Client, event: MessageEvent) -> None:
     await client.send(event.arg)

@@ -9,5 +9,5 @@ reject_tome = Addon(
 
 
 @reject_tome.receive(tome())
-async def receive_tome(client: Client) -> None:
+async def handle_tome(client: Client) -> None:
     await client.reject('Do not send message to me!')

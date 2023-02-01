@@ -9,7 +9,7 @@ square = Addon(
 
 
 @square.receive(command('square'))
-async def receive_square(client: Client, event: MessageEvent) -> None:
+async def handle_square(client: Client, event: MessageEvent) -> None:
     arg = event.arg
 
     try:

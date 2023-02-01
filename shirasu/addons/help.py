@@ -16,7 +16,7 @@ Description: {description}
 
 
 @help_addon.receive(command('help'))
-async def receive_echo(client: Client, pool: AddonPool, event: MessageEvent) -> None:
+async def handle_help(client: Client, pool: AddonPool, event: MessageEvent) -> None:
     name = event.arg
     if not name:
         addons = ', '.join(a.name for a in pool)
