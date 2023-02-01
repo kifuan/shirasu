@@ -9,32 +9,23 @@ class AddonPool:
     def __init__(self) -> None:
         self._addons: dict[str, Addon] = {}
 
-    def load(self, addon: Addon, namespace: str | None = None) -> None:
+    def load(self, addon: Addon) -> None:
         """
         Loads addon.
         :param addon: the addons to load.
-        :param namespace: the namespace in config file.
         """
 
-        if namespace is None:
-            namespace = addon.name
-
-        if namespace in self._addons:
-            logger.warning(f'Duplicate namespace {namespace}, skipping.')
+        if addon.name in self._addons:
+            logger.warning(f'Duplicate addon name {addon.name}, skipping.')
             return
 
-        if addon in self._addons.values():
-            logger.warning(f'Duplicate addon {addon.name}, skipping.')
-            return
+        self._addons[addon.name] = addon
+        logger.success(f'Loaded addon {addon.name}.')
 
-        self._addons[namespace] = addon
-        logger.success(f'Loaded addon {addon.name} with namespace {namespace}.')
-
-    def load_module(self, module_name: str, namespace: str | None = None) -> None:
+    def load_module(self, module_name: str) -> None:
         """
         Loads addons from module.
         :param module_name: the module name.
-        :param namespace: the namespace in config file.
         """
 
         if module_name in self._addons:
@@ -57,18 +48,12 @@ class AddonPool:
         if len(addons) > 1:
             logger.warning(f'Too many addons in single module {module_name}, load {addon.name} only.')
 
-        self.load(addon, namespace)
+        self.load(addon)
 
-    def get_namespace(self, addon: Addon) -> str:
-        for namespace, add in self._addons.items():
-            if add is addon:
-                return namespace
-        raise NameError(f'no namespace for addon {addon.name}')
-
-    def get_addon(self, namespace: str) -> Addon:
-        if addon := self.get_addon(namespace):
+    def get_addon(self, name: str) -> Addon:
+        if addon := self.get_addon(name):
             return addon
-        raise NameError(f'no addon for namespace {namespace}')
+        raise NameError(f'no addon for namespace {name}')
 
     def __iter__(self) -> Iterator[Addon]:
         yield from self._addons.values()

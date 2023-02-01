@@ -61,16 +61,12 @@ class Addon:
             logger.warning(f'Attempted to receive for addon {self._name} when the receiver is absent.')
             return
 
-        async def _provide_config(global_config: GlobalConfig) -> Any:
+        def _provide_config(global_config: GlobalConfig) -> Any:
             if self._config_model is None:
-                return None
+                raise ValueError('attempted to get config when the model is absent')
+            return self._config_model.parse_obj(global_config.addons.get(self._name, {}))
 
-            # To reduce circular import.
-            from .pool import AddonPool
-            namespace = AddonPool().get_namespace(self)
-            return self._config_model.parse_obj(global_config.addons.get(namespace, {}))
-
-        di.provide('config', _provide_config, check_duplicate=False)
+        di.provide('config', _provide_config, sync=True, check_duplicate=False)
 
         _, receiver = self._rule_receiver
         await receiver()
