@@ -1,4 +1,7 @@
-from .addon import Addon
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .addon import Addon
 
 
 class AddonError(Exception):
@@ -12,7 +15,7 @@ class DuplicateAddonError(AddonError):
     Raises when addon name is duplicate.
     """
 
-    def __init__(self, addon: Addon) -> None:
+    def __init__(self, addon: 'Addon') -> None:
         super().__init__(f'duplicate addon: {addon.name}')
         self.addon = addon
 
@@ -34,6 +37,6 @@ class NoConfigModelError(AddonError):
     Raises when attempting to get the config when the model is absent.
     """
 
-    def __init__(self, addon: Addon):
+    def __init__(self, addon: 'Addon'):
         super().__init__(f'attempted to get config for {addon.name} when its model is absent')
         self.addon = addon
