@@ -29,7 +29,7 @@ class AddonPool:
         """
 
         if addon.name in self._addons:
-            raise DuplicateAddonError(addon)
+            raise DuplicateAddonError(addon.name)
 
         self._addons[addon.name] = addon
         logger.success(f'Loaded addon {addon.name}.')

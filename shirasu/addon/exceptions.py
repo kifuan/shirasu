@@ -15,10 +15,6 @@ class DuplicateAddonError(AddonError):
     Raises when addon name is duplicate.
     """
 
-    def __init__(self, addon: 'Addon') -> None:
-        super().__init__(f'duplicate addon: {addon.name}')
-        self.addon = addon
-
 
 class LoadAddonError(AddonError):
     """
