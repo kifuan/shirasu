@@ -70,7 +70,13 @@ class DependencyInjector:
 
         # Check types of injected parameters.
         for dep, param in params.items():
-            if not isinstance(val := args[dep], expected := param.annotation):
+            anno = param.annotation
+
+            # Skip untyped parameters.
+            if anno == inspect.Parameter.empty:
+                continue
+
+            if not isinstance(val := args[dep], expected := anno):
                 module = inspect.getmodule(func)
                 module_name = module.__name__ if module else '<unknown module>'
                 module_func_name = f'{module_name}:{func.__name__}'
@@ -120,7 +126,7 @@ class DependencyInjector:
             sync: bool = False
     ) -> Callable[[], Any]:
         if not sync:
-            assert inspect.iscoroutinefunction(func), 'you lied.'
+            assert inspect.iscoroutinefunction(func), 'you should set sync=True when injecting a synchronous function'
 
         async def wrapper():
             return await self._apply(func)
@@ -155,7 +161,7 @@ class DependencyInjector:
             check_duplicate: bool = True
     ) -> None:
         if not sync:
-            assert inspect.iscoroutinefunction(func), 'you lied.'
+            assert inspect.iscoroutinefunction(func), 'you should set sync=True when using a synchronous provider'
 
         if check_duplicate and name in self._providers:
             raise DuplicateDependencyProviderError(name)
