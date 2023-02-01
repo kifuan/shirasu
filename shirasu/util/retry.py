@@ -15,7 +15,7 @@ def retry(*, timeout: float, messages: dict[Type[BaseException], str]) -> Callab
                     if not (msg := messages.get(e.__class__)):
                         raise
 
-                    logger_deco(f).warning(f'{msg}, retrying in {timeout} seconds.', from_decorator=True)
+                    logger_deco(f).warning(f'{msg}, retrying in {timeout} seconds.')
                     await asyncio.sleep(timeout)
         return inner
 
