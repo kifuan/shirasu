@@ -13,7 +13,6 @@ async def receive_square(client: Client, event: MessageEvent) -> None:
     arg = event.arg
 
     try:
-        num = float(arg)
-        await client.send(f'{pow(num, 2):g}')
+        await client.send(f'{pow(float(arg), 2):g}')
     except ValueError:
         await client.reject(f'Invalid number: {arg}')
