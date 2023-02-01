@@ -11,8 +11,7 @@ from shirasu.addon import (
 
 @pytest.mark.asyncio
 async def test_echo():
-    pool = AddonPool()
-    pool.load_module('shirasu.addons.echo')
+    pool = AddonPool.from_modules('shirasu.addons.echo')
     client = MockClient(pool)
 
     await client.post_event(mock_message_event('group', '/echo hello'))
