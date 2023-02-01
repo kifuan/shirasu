@@ -8,6 +8,17 @@ from shirasu.addon import (
 )
 
 
+def test_pool_load_error():
+    pool = AddonPool()
+    pool.load_module('shirasu.addons.echo')
+
+    with pytest.raises(DuplicateAddonError):
+        pool.load_module('shirasu.addons.echo')
+
+    with pytest.raises(LoadAddonError):
+        pool.load_module('@dummy_module')
+
+
 @pytest.mark.asyncio
 async def test_echo():
     pool = AddonPool.from_modules('shirasu.addons.echo')
@@ -16,23 +27,22 @@ async def test_echo():
     await client.post_event(mock_message_event('group', '/echo hello'))
 
     msg = await client.get_message()
-    assert msg.message.plain_text == 'hello'
+    assert msg.plain_text == 'hello'
 
     await client.post_event(mock_message_event('group', 'echo hello'))
     with pytest.raises(asyncio.TimeoutError):
         await client.get_message()
 
 
-def test_duplicate_addon():
-    pool = AddonPool()
-    pool.load_module('shirasu.addons.echo')
+@pytest.mark.asyncio
+async def test_square():
+    pool = AddonPool.from_modules('shirasu.addons.square')
+    client = MockClient(pool)
 
-    with pytest.raises(DuplicateAddonError):
-        pool.load_module('shirasu.addons.echo')
+    await client.post_event(mock_message_event('group', '/square 2'))
+    square2_msg = await client.get_message()
+    assert square2_msg.plain_text == '4'
 
-
-def test_load_error_addon():
-    pool = AddonPool()
-
-    with pytest.raises(LoadAddonError):
-        pool.load_module('@dummy_module')
+    await client.post_event(mock_message_event('group', '/square a'))
+    rejected_msg = await client.get_message_event()
+    assert rejected_msg.is_rejected
