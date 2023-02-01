@@ -5,6 +5,7 @@ from .rule import Rule
 from ..di import di
 from ..logger import logger
 from ..config import GlobalConfig
+from .exceptions import NoConfigModelError
 
 
 class Addon:
@@ -53,6 +54,7 @@ class Addon:
         if not self._rule_receiver:
             logger.warning(f'Attempted to match addon {self._name} when the rule is absent.')
             return False
+
         rule, _ = self._rule_receiver
         return await rule.match()
 
@@ -63,7 +65,7 @@ class Addon:
 
         def _provide_config(global_config: GlobalConfig) -> Any:
             if self._config_model is None:
-                raise ValueError('attempted to get config when the model is absent')
+                raise NoConfigModelError(self)
             return self._config_model.parse_obj(global_config.addons.get(self._name, {}))
 
         di.provide('config', _provide_config, sync=True, check_duplicate=False)

@@ -11,6 +11,7 @@ from .exceptions import (
     LoadAddonError,
     DuplicateAddonError,
     NoSuchAddonError,
+    NoConfigModelError,
 )
 
 
@@ -25,4 +26,5 @@ __all__ = [
     'LoadAddonError',
     'DuplicateAddonError',
     'NoSuchAddonError',
+    'NoConfigModelError',
 ]
