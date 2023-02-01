@@ -1,3 +1,4 @@
+import yaml
 from typing import Any
 from pathlib import Path
 from pydantic import BaseModel
@@ -11,4 +12,4 @@ class GlobalConfig(BaseModel):
 
 
 def load_config(path: str | Path) -> GlobalConfig:
-    return GlobalConfig.parse_file(path)
+    return GlobalConfig.parse_obj(yaml.safe_load(Path(path).read_text('utf8')))
