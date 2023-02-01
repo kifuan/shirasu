@@ -5,6 +5,7 @@ from typing import Any, Literal
 from abc import ABC, abstractmethod
 
 from ..di import di
+from ..util import asyncify
 from ..addon import AddonPool
 from ..config import GlobalConfig
 from ..logger import logger
@@ -34,10 +35,10 @@ class Client(ABC):
         self.curr_event: Event | None = None
         self._pool = pool
         self._global_config = global_config
-        di.provide('client', lambda: self, sync=True, check_duplicate=False)
-        di.provide('pool', lambda: self._pool, sync=True, check_duplicate=False)
-        di.provide('event', lambda: self.curr_event, sync=True, check_duplicate=False)
-        di.provide('global_config', lambda: self._global_config, sync=True, check_duplicate=False)
+        di.provide('client', asyncify(lambda: self), check_duplicate=False)
+        di.provide('pool', asyncify(lambda: self._pool), check_duplicate=False)
+        di.provide('event', asyncify(lambda: self.curr_event), check_duplicate=False)
+        di.provide('global_config', asyncify(lambda: self._global_config), check_duplicate=False)
 
     @abstractmethod
     async def call_action(self, action: str, **params: Any) -> dict[str, Any]:

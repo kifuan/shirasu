@@ -31,16 +31,7 @@ async def provide_year_unknown(unknown_var: Any) -> int:
     return YEAR
 
 
-def provide_year_sync() -> int:
-    return YEAR
-
-
 async def user(year: int, name: str) -> None:
-    assert year == YEAR
-    assert name == NAME
-
-
-def user_sync(year: int, name: str) -> None:
     assert year == YEAR
     assert name == NAME
 
@@ -69,14 +60,6 @@ async def test_unknown():
     di.provide('year', provide_year_unknown)
     with pytest.raises(UnknownDependencyError):
         await di.inject(user)()
-
-
-@pytest.mark.asyncio
-async def test_sync_di():
-    di = DependencyInjector()
-    di.provide('name', provide_name)
-    di.provide('year', provide_year_sync, sync=True)
-    await di.inject(user_sync, sync=True)()
 
 
 def test_duplicate_provider():

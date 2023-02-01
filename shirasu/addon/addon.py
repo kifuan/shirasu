@@ -54,16 +54,16 @@ class Addon:
             logger.warning(f'Duplicate rule and receiver for addon {self._name}, the old one will be overwritten.')
 
         def wrapper(handler: Any) -> Any:
-            handler = di.inject(handler, sync=not asyncio.iscoroutinefunction(handler))  # type: ignore
+            handler = di.inject(handler)
             self._rule_receiver = rule, handler
             return handler
 
         return wrapper
 
     def _provide_config(self) -> None:
-        def provide(global_config: GlobalConfig) -> Any:
+        async def provide(global_config: GlobalConfig) -> Any:
             return self._config_model.parse_obj(global_config.addons.get(self._name, {}))
-        di.provide('config', provide, sync=True, check_duplicate=False)
+        di.provide('config', provide, check_duplicate=False)
 
     async def do_match(self) -> bool:
         """

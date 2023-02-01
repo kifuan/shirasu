@@ -13,8 +13,8 @@ class Rule:
     Note: the handler will be injected automatically.
     """
 
-    def __init__(self, handler: Callable[..., Awaitable[bool] | bool]):
-        self._handler = di.inject(handler, sync=not asyncio.iscoroutinefunction(handler))  # type: ignore
+    def __init__(self, handler: Callable[..., Awaitable[bool]]):
+        self._handler = di.inject(handler)
 
     def __or__(self, rule: 'Rule') -> 'Rule':
         async def handler() -> bool:
@@ -45,7 +45,7 @@ def message() -> Rule:
     :return: the rule.
     """
 
-    def handler(event: Event) -> bool:
+    async def handler(event: Event) -> bool:
         return event.post_type == 'message'
     return Rule(handler)
 
@@ -57,7 +57,7 @@ def command(cmd: str) -> Rule:
     :return: the rule.
     """
 
-    def handler(event: MessageEvent, global_config: GlobalConfig) -> bool:
+    async def handler(event: MessageEvent, global_config: GlobalConfig) -> bool:
         return event.match_command(cmd, global_config.command_prefixes)
     return message() & Rule(handler)
 
@@ -72,7 +72,7 @@ def regex(r: Union[str, re.Pattern]) -> Rule:
     if isinstance(r, str):
         r = re.compile(r)
 
-    def handler(event: MessageEvent) -> bool:
+    async def handler(event: MessageEvent) -> bool:
         return bool(r.match(event.message.plain_text))  # type: ignore
     return message() & Rule(handler)
 
@@ -83,7 +83,7 @@ def tome() -> Rule:
     :return: the rule.
     """
 
-    def handler(event: MessageEvent) -> bool:
+    async def handler(event: MessageEvent) -> bool:
         if event.message_type == 'private':
             return True
 
@@ -103,7 +103,7 @@ def notice(notice_type: str) -> Rule:
     :return the rule.
     """
 
-    def handler(event: Event) -> bool:
+    async def handler(event: Event) -> bool:
         if event.post_type != 'notice':
             return False
         return cast(NoticeEvent, event).notice_type == notice_type

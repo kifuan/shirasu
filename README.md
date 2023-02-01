@@ -79,8 +79,8 @@ from datetime import datetime
 from shirasu.di import inject, provide
 
 
-@provide('now', sync=True)
-def provide_now() -> datetime:
+@provide('now')
+async def provide_now() -> datetime:
     return datetime.now()
 
 
@@ -90,8 +90,8 @@ async def provide_today(now: datetime) -> int:
     return now.day
 
 
-@inject(sync=True)
-def use_today(today: int) -> None:
+@inject()
+async def use_today(today: int) -> None:
     print(today)
 
 
@@ -108,7 +108,7 @@ await use_today()
 await use_now()
 ```
 
-Both async or sync functions will be wrapped by **async functions** eventually. The `sync` parameter is just to provide typing features provided by `@overload`.
+To keep consistent, all functions should be `async`.
 
 ### Addon System
 
