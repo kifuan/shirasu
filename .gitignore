@@ -4,4 +4,4 @@
 dist
 *.json
 *.yml
-*.py
+app.py
