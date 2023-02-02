@@ -1,3 +1,4 @@
+import asyncio
 import inspect
 from typing import Any, Callable, Awaitable, TypeVar, ParamSpec
 from .logger import logger
@@ -65,10 +66,10 @@ class DependencyInjector:
         if circular_deps := [dep for dep in params if dep in inject_for]:
             raise CircularDependencyError(circular_deps)
 
-        args = {
-            dep: await self._apply(self._providers[dep], dep, *inject_for)
+        args = dict(zip(params, await asyncio.gather(*(
+            self._apply(self._providers[dep], dep, *inject_for)
             for dep in params
-        }
+        ))))
 
         # Check types of injected parameters.
         for dep, param in params.items():
