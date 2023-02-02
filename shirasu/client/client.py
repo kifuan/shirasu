@@ -115,14 +115,12 @@ class Client(ABC):
         Applies all addons.
         """
 
-        selectors = await asyncio.gather(*(addon.do_match() for addon in self._pool))
-        matched_addons = list(compress(self._pool, selectors))
+        # Normally the addon.do_match() won't modify the pool, but to
+        # improve the robustness, I cache the pool first.
+        addons = tuple(self._pool)
+        selectors = await asyncio.gather(*(addon.do_match() for addon in addons))
 
-        if not (count := len(matched_addons)):
-            return
-
-        addon = matched_addons[0]
-        if count > 1:
-            logger.warning(f'Matched {count} conflict addons, only applies the first: {addon.name}.')
-
-        await addon.do_receive()
+        # Using asyncio.gather to run receivers in parallel may make outputs unordered.
+        # However, matchers usually have no output, so they can be run in parallel.
+        for addon in compress(addons, selectors):
+            await addon.do_receive()
