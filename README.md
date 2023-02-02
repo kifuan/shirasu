@@ -26,7 +26,7 @@ if __name__ == '__main__':
         'shirasu.addons.echo',
         'shirasu.addons.help',
     )
-    asyncio.run(OneBotClient.listen(pool=pool))
+    asyncio.run(OneBotClient.listen(pool))
 ```
 
 Then, create a `shirasu.yml`, which could be other names configured by specifying the `config` argument of `OneBotClient.listen`.
