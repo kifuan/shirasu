@@ -129,8 +129,12 @@ The global dependency injector.
 
 def inject() -> Callable[[Callable[..., AT]], Callable[[], AT]]:
     """
-    Injects function using decorator.
-    :return: the decorator to inject function.
+    Injects given function using decorator.
+
+    >>> @inject()
+    >>> async def foo(bar: int) -> None: ...
+
+    :return: the decorator to inject given function.
     """
 
     def deco(func: Callable[..., AT]) -> Callable[[], AT]:
@@ -140,8 +144,12 @@ def inject() -> Callable[[Callable[..., AT]], Callable[[], AT]]:
 
 def provide(name: str, *, check_duplicate: bool = True) -> Callable[[Callable[P, AT]], Callable[P, AT]]:
     """
-    Registers provider using decorator.
-    :return: the decorator to register provider.
+    Registers given provider using decorator.
+
+    >>> @provide('foo')
+    >>> async def provide_foo() -> int: ...
+
+    :return: the decorator to register given provider.
     """
 
     def deco(func: Callable[P, AT]) -> Callable[P, AT]:
