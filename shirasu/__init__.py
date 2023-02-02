@@ -4,6 +4,7 @@ from .event import (
     NoticeEvent as NoticeEvent,
     RequestEvent as RequestEvent,
     MessageEvent as MessageEvent,
+    MetaEvent as MetaEvent,
 )
 from .addon import (
     Addon as Addon,
@@ -42,6 +43,7 @@ __all__ = [
     'MessageEvent',
     'RequestEvent',
     'NoticeEvent',
+    'MetaEvent',
     'Addon',
     'AddonPool',
     'Rule',
