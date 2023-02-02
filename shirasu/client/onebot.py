@@ -11,7 +11,7 @@ from ..addon import AddonPool
 from ..config import load_config, GlobalConfig
 from ..logger import logger
 from ..util import FutureTable, retry
-from ..event import MessageEvent, NoticeEvent, RequestEvent
+from ..event import MessageEvent, NoticeEvent, RequestEvent, MetaEvent
 from ..message import Message
 
 
@@ -48,21 +48,24 @@ class OneBotClient(Client):
             return
 
         post_type = data.get('post_type')
-        if post_type == 'meta_event':
-            return
-
-        logger.info(f'Received event {data}')
 
         self.curr_event = None
+        # Shut up, mypy.
+        event: Any
         if post_type == 'message':
-            self.curr_event = MessageEvent.from_data(data)
+            event = MessageEvent.from_data(data)
+            logger.info(f'Received {event.message_type} message from {event.user_id}: {event.raw_message}')
         elif post_type == 'request':
-            self.curr_event = RequestEvent.from_data(data)
+            event = RequestEvent.from_data(data)
         elif post_type == 'notice':
-            self.curr_event = NoticeEvent.from_data(data)
+            event = NoticeEvent.from_data(data)
+        elif post_type == 'meta_event':
+            event = MetaEvent.from_data(data)
         else:
             logger.warning(f'Ignoring unknown event {post_type}.')
             return
+
+        self.curr_event = event
 
         await self.apply_addons()
 
