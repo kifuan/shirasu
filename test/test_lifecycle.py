@@ -44,4 +44,3 @@ async def test_lifecycle_connected():
     ))
     with pytest.raises(asyncio.TimeoutError):
         await client.get_message()
-
