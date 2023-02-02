@@ -99,7 +99,7 @@ class DependencyInjector:
         :return: the injected function.
         """
 
-        assert inspect.iscoroutinefunction(func), 'injected functions should be async'
+        assert inspect.iscoroutinefunction(func), 'the injected function should be async'
 
         async def wrapper():
             return await self._apply(func)
@@ -110,10 +110,10 @@ class DependencyInjector:
         Registers provider.
         :param name: the name of the dependency it provides.
         :param func: the provider function.
-        :param check_duplicate: whether to check the dependency is duplicate.
+        :param check_duplicate: whether to check the dependencies are duplicate.
         """
 
-        assert inspect.iscoroutinefunction(func), 'providers should be async'
+        assert inspect.iscoroutinefunction(func), 'the provider should be async'
 
         if check_duplicate and name in self._providers:
             raise DuplicateDependencyProviderError(name)
@@ -127,7 +127,7 @@ The global dependency injector.
 """
 
 
-def inject() -> Callable[[Callable[..., Awaitable[T]]], Callable[[], Awaitable[T]]]:
+def inject() -> Callable[[Callable[..., AT]], Callable[[], AT]]:
     """
     Injects function using decorator.
     :return: the decorator to inject function.
