@@ -21,7 +21,7 @@ class Event:
 class MessageEvent(Event):
     post_type: Literal['message']
 
-    def __init__(self, **params: Any):
+    def __init__(self, **params: Any) -> None:
         super().__init__(**params)
         self.message_type: Literal['private', 'group'] = params['message_type']
         self.message: Message = params['parsed_message']
@@ -50,7 +50,7 @@ class MessageEvent(Event):
 class NoticeEvent(Event):
     post_type: Literal['notice']
 
-    def __init__(self, **params: Any):
+    def __init__(self, **params: Any) -> None:
         super().__init__(**params)
         self.notice_type: str = params['notice_type']
 
@@ -58,9 +58,20 @@ class NoticeEvent(Event):
 class RequestEvent(Event):
     post_type: Literal['request']
 
-    def __init__(self, **params: Any):
+    def __init__(self, **params: Any) -> None:
         super().__init__(**params)
         self.request_type: str = params['request_type']
+
+
+class MetaEvent(Event):
+    post_type: Literal['meta_event']
+
+    def __init__(self, **params: Any) -> None:
+        super().__init__(**params)
+        self.meta_event_type: Literal['lifecycle', 'heartbeat'] = params['meta_event_type']
+        self.sub_type: str = params.get('sub_type', '')
+        self.status: dict[str, Any] = params.get('status', {})
+        self.interval: int = params.get('interval', -1)
 
 
 MOCK_SELF_ID = 1883
@@ -110,5 +121,13 @@ def mock_request_event(request_type: str, **params: Any) -> RequestEvent:
     return RequestEvent(
         request_type=request_type,
         **mock_event(post_type='request').data,
+        **params,
+    )
+
+
+def mock_meta_event(meta_event_type: str, **params: Any) -> MetaEvent:
+    return MetaEvent(
+        meta_event_type=meta_event_type,
+        **mock_event(post_type='meta_event').data,
         **params,
     )
