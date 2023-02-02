@@ -23,8 +23,10 @@ class MessageEvent(Event):
 
     def __init__(self, **params: Any) -> None:
         super().__init__(**params)
+        self.raw_message: str = params['raw_message']
         self.message_type: Literal['private', 'group'] = params['message_type']
         self.message: Message = params['parsed_message']
+        self.sender: dict[str, Any] = params['sender']
         self.user_id: int = params['user_id']
         self.group_id: int | None = params.get('group_id')
         self.is_rejected: bool = bool(params.get('is_rejected'))
@@ -77,6 +79,7 @@ class MetaEvent(Event):
 MOCK_SELF_ID = 1883
 MOCK_USER_ID = 1884
 MOCK_GROUP_ID = 1885
+MOCK_USER_NAME = 'MOCK USER NAME'
 
 
 def mock_event(post_type: str, **params: Any) -> Event:
@@ -100,6 +103,13 @@ def mock_message_event(
 
     params.setdefault('user_id', MOCK_USER_ID)
     params.setdefault('group_id', MOCK_GROUP_ID)
+    params.setdefault('raw_message', 'MOCK RAW MESSAGE')
+    params.setdefault('sender', {
+        'user_id': MOCK_USER_ID,
+        'nickname': MOCK_USER_NAME,
+        'sex': 'unknown',
+        'age': 0,
+    })
 
     return MessageEvent(
         parsed_message=message,
