@@ -2,7 +2,7 @@ import re
 from typing import cast, Union, Callable, Awaitable
 
 from ..di import di
-from ..event import Event, MessageEvent, NoticeEvent
+from ..event import Event, MessageEvent, NoticeEvent, MetaEvent
 from ..config import GlobalConfig
 
 
@@ -108,3 +108,25 @@ def notice(notice_type: str) -> Rule:
         return cast(NoticeEvent, event).notice_type == notice_type
 
     return Rule(handler)
+
+
+def meta() -> Rule:
+    """
+    The rule to match meta events.
+    :return: the rule.
+    """
+
+    async def handler(event: Event) -> bool:
+        return event.post_type == 'meta_event'
+    return Rule(handler)
+
+
+def lifecycle(lifecycle_type: str) -> Rule:
+    """
+    The rule to match lifecycle meta events.
+    :return: the rule.
+    """
+
+    async def handler(event: MetaEvent) -> bool:
+        return event.sub_type == lifecycle_type
+    return meta() & Rule(handler)
