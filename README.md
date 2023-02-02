@@ -4,7 +4,7 @@
 
 `Shirasu` is a simple bot framework to study the principles, based on  `OneBot v11` (especially `go-cqhttp`).
 
-出于练习英语的目的，本篇我就用简单英文写了（来自寒假末尾最后的倔强，其实是 Grammarly 监督才能避免一堆语法错误）。
+出于练习英语的目的，此 `README` 我就用简单英文写了，我也写了一篇[中文博客](https://blog.kifuan.me/archives/onebot-v11-python-sdk-details)介绍这个项目，内容大体一致但更详细一点（来自寒假末尾最后的倔强，其实是 `Grammarly` 监督才能避免一堆语法错误）。
 
 ## Usage
 
