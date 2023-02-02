@@ -88,7 +88,7 @@ class OneBotClient(Client):
         ConnectionClosedError: 'Connection closed',
         ConnectionRefusedError: 'Connection refused',
     })
-    async def listen(cls, *, pool: AddonPool, config: str | Path = 'shirasu.yml') -> None:
+    async def listen(cls, pool: AddonPool, config: str | Path = 'shirasu.yml') -> None:
         """
         Start listening the websocket url.
         :param pool: the addon pool, which can be used to preload plugins.
