@@ -8,7 +8,7 @@
 
 ## Usage
 
-Install `shirasu` first.
+Install `shirasu` first. `Python 3.10+` is required.
 
 ```bash
 > pip install shirasu
