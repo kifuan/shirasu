@@ -85,7 +85,7 @@ class Client(ABC):
         """
 
         if not isinstance(self.curr_event, MessageEvent):
-            logger.warning('Attempted to send message back when current event is not message event.')
+            logger.warning('Attempted to send message back when the current event is not message event.')
             return -1
 
         if isinstance(message, str):
