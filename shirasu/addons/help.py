@@ -28,10 +28,12 @@ async def handle_help(client: Client, config: HelpConfig, pool: AddonPool, event
         if not config.show_addon_list:
             await client.send('The configuration to show the addon list is turned off.')
             return
-        else:
-            addons = ', '.join(a.name for a in pool.get_enabled_addons())
-            await client.send(f'Available addons: {addons}')
-            return
+
+        await client.send('\n'.join(
+            f'{addon.name} {"disabled" if pool.get_addon_disabled(addon) else "enabled"}'
+            for addon in pool.get_addons()
+        ))
+        return
 
     if addon := pool.get_addon(name):
         await client.send(FORMAT.format(
