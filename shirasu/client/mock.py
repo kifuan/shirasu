@@ -83,7 +83,7 @@ class MockClient(Client):
 
         return await asyncio.wait_for(self._message_event_queue.get(), timeout)
 
-    async def get_message(self, timeout: float = .1) -> Message:
+    async def get_message(self, timeout: float = 0.01) -> Message:
         """
         Gets the message.
         :param timeout: the timeout.
