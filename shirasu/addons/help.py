@@ -29,7 +29,7 @@ async def handle_help(client: Client, config: HelpConfig, pool: AddonPool, event
             await client.send('The configuration to show the addon list is turned off.')
             return
         else:
-            addons = ', '.join(a.name for a in pool)
+            addons = ', '.join(a.name for a in pool.get_enabled_addons())
             await client.send(f'Available addons: {addons}')
             return
 

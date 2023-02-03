@@ -20,6 +20,7 @@ class AddonPool:
         """
 
         self._addons: dict[str, Addon] = {}
+        self._disabled_addons: set[str] = set()
 
     @classmethod
     def from_modules(cls, *modules: str) -> 'AddonPool':
@@ -78,5 +79,45 @@ class AddonPool:
 
         return self._addons.get(name)
 
-    def __iter__(self) -> Iterator[Addon]:
-        yield from self._addons.values()
+    def set_addon_disabled(self, addon: Addon | str, disabled: bool) -> None:
+        """
+        Sets whether the given addon is disabled.
+        :param addon: the addon to set.
+        :param disabled: whether to set the addon is disabled.
+        """
+
+        if isinstance(addon, Addon):
+            addon = addon.name
+
+        if addon not in self._addons:
+            raise NameError(f'addon {addon} does not exist')
+
+        if disabled:
+            self._disabled_addons.add(addon)
+        else:
+            self._disabled_addons.discard(addon)
+
+    def get_addon_disabled(self, addon: Addon | str) -> bool:
+        """
+        Gets whether the given addon is disabled.
+        :param addon: the addon to get.
+        :return: whether it is disabled.
+        """
+
+        if isinstance(addon, Addon):
+            addon = addon.name
+
+        if addon not in self._addons:
+            raise NameError(f'addon {addon} does not exist')
+
+        return addon in self._disabled_addons
+
+    def get_enabled_addons(self) -> Iterator[Addon]:
+        """
+        Gets enabled addons.
+        :return: the enabled addons.
+        """
+
+        for addon in self._addons.values():
+            if not self.get_addon_disabled(addon):
+                yield addon

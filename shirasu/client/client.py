@@ -117,7 +117,7 @@ class Client(ABC):
 
         # Normally the addon.do_match() won't modify the pool, but to
         # improve the robustness, I cache the pool first.
-        addons = tuple(self._pool)
+        addons = tuple(self._pool.get_enabled_addons())
         selectors = await asyncio.gather(*(addon.do_match() for addon in addons))
 
         # Using asyncio.gather to run receivers in parallel may make outputs unordered.
