@@ -121,6 +121,14 @@ class AddonPool:
 
         return addon in self._disabled_addons
 
+    def get_addons(self) -> Iterator[Addon]:
+        """
+        Gets all addons.
+        :return: all addons.
+        """
+
+        yield from self._addons.values()
+
     def get_enabled_addons(self) -> Iterator[Addon]:
         """
         Gets enabled addons.
