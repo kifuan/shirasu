@@ -70,6 +70,15 @@ class AddonPool:
 
         return self
 
+    def has_addon(self, name: str) -> bool:
+        """
+        Gets whether given addon name is in the pool.
+        :param name: the name of addon.
+        :return: whether it is in the pool.
+        """
+
+        return name in self._addons
+
     def get_addon(self, name: str) -> Addon | None:
         """
         Gets the addon by its name, or None if the addon is absent.
