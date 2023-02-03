@@ -38,6 +38,9 @@ ws: ws://127.0.0.1:8080
 # The prefixes of commands.
 command_prefixes: ['/', '']
 
+# Superuser accounts.
+superusers: [123456, 234567]
+
 # The separator of commands, using regex.
 command_separator: '\s+'
 
