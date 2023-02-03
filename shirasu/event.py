@@ -1,3 +1,4 @@
+import re
 from typing import Any, Literal
 from datetime import datetime
 from .message import Message, MessageSegment, text, parse_cq_message
@@ -31,6 +32,7 @@ class MessageEvent(Event):
         self.group_id: int | None = params.get('group_id')
         self.is_rejected: bool = bool(params.get('is_rejected'))
         self.arg = ''
+        self.args = []
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> 'MessageEvent':
@@ -39,12 +41,13 @@ class MessageEvent(Event):
             **data,
         )
 
-    def match_command(self, cmd: str, command_prefixes: list[str]) -> bool:
+    def match_command(self, cmd: str, command_prefixes: list[str], command_separator: str) -> bool:
         t = self.message.plain_text
         for start in command_prefixes:
             prefix = start + cmd
             if t.startswith(prefix):
                 self.arg = t.removeprefix(prefix).strip()
+                self.args = re.split(command_separator, self.arg)
                 return True
         return False
 

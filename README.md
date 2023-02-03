@@ -14,7 +14,7 @@ Install `shirasu` first. `Python 3.10+` is required.
 > pip install shirasu
 ```
 
-To create a simple bot application, you should create a `.py` file containing the following code:
+To create a simple bot application, you should create a `.py` file containing` the following code:
 
 ```python
 import asyncio
@@ -37,6 +37,9 @@ ws: ws://127.0.0.1:8080
 
 # The prefixes of commands.
 command_prefixes: ['/', '']
+
+# The separator of commands, using regex.
+command_separator: '\s+'
 
 # The configurations of addons.
 addons:
