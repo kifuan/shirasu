@@ -95,6 +95,18 @@ def tome() -> Rule:
     return message() & Rule(handler)
 
 
+def superuser() -> Rule:
+    """
+    The rule to match messages sent from superusers.
+    :return: the rule.
+    """
+
+    async def handler(event: MessageEvent, global_config: GlobalConfig) -> bool:
+        return event.user_id in global_config.superusers
+
+    return message() & Rule(handler)
+
+
 def notice(notice_type: str) -> Rule:
     """
     The rule to match certain notice.

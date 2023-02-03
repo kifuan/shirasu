@@ -3,6 +3,7 @@ from .addon import Addon as Addon
 from .rule import (
     Rule as Rule,
     lifecycle as lifecycle,
+    superuser as superuser,
     command as command,
     notice as notice,
     regex as regex,
@@ -20,6 +21,7 @@ __all__ = [
     'AddonPool',
     'Addon',
     'Rule',
+    'superuser',
     'command',
     'notice',
     'regex',
