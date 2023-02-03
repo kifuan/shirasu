@@ -31,8 +31,8 @@ class MessageEvent(Event):
         self.user_id: int = params['user_id']
         self.group_id: int | None = params.get('group_id')
         self.is_rejected: bool = bool(params.get('is_rejected'))
-        self.arg = ''
-        self.args = []
+        self.arg: str = ''
+        self.args: list[str] = []
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> 'MessageEvent':
