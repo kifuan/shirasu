@@ -3,54 +3,54 @@ from shirasu.message import (
 )
 
 
-def test_parse_image():
+def test_parse_image() -> None:
     file = 'taffy.jpg'
     msg = parse_cq_message(f'[CQ:image,file={file}]').segments[0]
     assert msg.type == 'image'
     assert msg.data['file'] == file
 
 
-def test_parse_text():
+def test_parse_text() -> None:
     t = 'this is simple text, nothing else'
     msg = parse_cq_message(t).segments[0]
     assert msg.type == 'text'
     assert msg.data['text'] == t
 
 
-def test_parse_at():
+def test_parse_at() -> None:
     qq = 1883
     msg = parse_cq_message(f'[CQ:at,qq={qq}]').segments[0]
     assert msg.type == 'at'
     assert msg.data['qq'] == qq
 
 
-def test_parse_record():
+def test_parse_record() -> None:
     file = 'taffy.mp3'
     msg = parse_cq_message(f'[CQ:record,file={file}]').segments[0]
     assert msg.type == 'record'
     assert msg.data['file'] == file
 
 
-def test_parse_poke():
+def test_parse_poke() -> None:
     msg = parse_cq_message('[CQ:poke]').segments[0]
     assert msg.type == 'poke'
 
 
-def test_parse_xml():
+def test_parse_xml() -> None:
     data = '<something></something>'
     msg = parse_cq_message(f'[CQ:xml,data={data}]').segments[0]
     assert msg.type == 'xml'
     assert msg.data['data'] == data
 
 
-def test_parse_json():
+def test_parse_json() -> None:
     data = '{"a": true}'
     msg = parse_cq_message(f'[CQ:json,data={data}]').segments[0]
     assert msg.type == 'json'
     assert msg.data['data'] == data
 
 
-def test_multiple():
+def test_multiple() -> None:
     segments = parse_cq_message('[CQ:image,file=file.jpg]text[CQ:at,qq=1883]').segments
     assert len(segments) == 3
     assert segments[0].type == 'image'

@@ -37,7 +37,7 @@ async def user(year: int, name: str) -> None:
 
 
 @pytest.mark.asyncio
-async def test_di():
+async def test_di() -> None:
     di = DependencyInjector()
     di.provide('name', provide_name)
     di.provide('year', provide_year)
@@ -45,7 +45,7 @@ async def test_di():
 
 
 @pytest.mark.asyncio
-async def test_circular():
+async def test_circular() -> None:
     di = DependencyInjector()
     di.provide('name', provide_name)
     di.provide('year', provide_year_circular)
@@ -54,7 +54,7 @@ async def test_circular():
 
 
 @pytest.mark.asyncio
-async def test_unknown():
+async def test_unknown() -> None:
     di = DependencyInjector()
     di.provide('name', provide_name)
     di.provide('year', provide_year_unknown)
@@ -62,7 +62,7 @@ async def test_unknown():
         await di.inject(user)()
 
 
-def test_duplicate_provider():
+def test_duplicate_provider() -> None:
     di = DependencyInjector()
     di.provide('name', provide_name)
     di.provide('name', provide_name, check_duplicate=False)

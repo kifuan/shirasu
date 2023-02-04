@@ -1,11 +1,10 @@
 import asyncio
 import inspect
-from typing import Any, Callable, Awaitable, TypeVar, ParamSpec
+from typing import cast, Any, Callable, Awaitable, TypeVar, ParamSpec
 from .logger import logger
 
 
 T = TypeVar('T')
-AT = Awaitable[T]
 P = ParamSpec('P')
 
 
@@ -53,9 +52,9 @@ class DependencyInjector:
     """
 
     def __init__(self) -> None:
-        self._providers: dict[str, Callable[..., AT]] = {}
+        self._providers: dict[str, Callable[..., Awaitable[T]]] = {}
 
-    async def _inject_func_args(self, func: Callable[..., AT], *inject_for: str) -> dict[str, Any]:
+    async def _inject_func_args(self, func: Callable[..., Awaitable[T]], *inject_for: str) -> dict[str, Any]:
         params = inspect.signature(func).parameters
 
         # Check unknown dependencies.
@@ -88,11 +87,11 @@ class DependencyInjector:
 
         return args
 
-    async def _apply(self, func: Callable[..., AT], *apply_for: str) -> AT:
+    async def _apply(self, func: Callable[..., Awaitable[T]], *apply_for: str) -> T:
         injected_args = await self._inject_func_args(func, *apply_for)
         return await func(**injected_args)
 
-    def inject(self, func: Callable[..., AT]) -> Callable[[], AT]:
+    def inject(self, func: Callable[..., Awaitable[T]]) -> Callable[[], Awaitable[T]]:
         """
         Injects function.
         :param func: the sync function to inject.
@@ -101,11 +100,11 @@ class DependencyInjector:
 
         assert inspect.iscoroutinefunction(func), 'the injected function should be async'
 
-        async def wrapper():
-            return await self._apply(func)
+        async def wrapper() -> T:
+            return cast(T, await self._apply(func))
         return wrapper
 
-    def provide(self, name: str, func: Callable[..., AT], *, check_duplicate: bool = True) -> None:
+    def provide(self, name: str, func: Callable[..., Awaitable[T]], *, check_duplicate: bool = True) -> None:
         """
         Registers provider.
         :param name: the name of the dependency it provides.
@@ -127,7 +126,7 @@ The global dependency injector.
 """
 
 
-def inject() -> Callable[[Callable[..., AT]], Callable[[], AT]]:
+def inject() -> Callable[[Callable[..., Awaitable[T]]], Callable[[], Awaitable[T]]]:
     """
     Injects given function using decorator.
 
@@ -137,12 +136,12 @@ def inject() -> Callable[[Callable[..., AT]], Callable[[], AT]]:
     :return: the decorator to inject given function.
     """
 
-    def deco(func: Callable[..., AT]) -> Callable[[], AT]:
+    def deco(func: Callable[..., Awaitable[T]]) -> Callable[[], Awaitable[T]]:
         return di.inject(func)
     return deco
 
 
-def provide(name: str, *, check_duplicate: bool = True) -> Callable[[Callable[P, AT]], Callable[P, AT]]:
+def provide(name: str, *, check_duplicate: bool = True) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awaitable[T]]]:
     """
     Registers given provider using decorator.
 
@@ -152,7 +151,7 @@ def provide(name: str, *, check_duplicate: bool = True) -> Callable[[Callable[P,
     :return: the decorator to register given provider.
     """
 
-    def deco(func: Callable[P, AT]) -> Callable[P, AT]:
+    def deco(func: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
         di.provide(name, func, check_duplicate=check_duplicate)
         return func
     return deco

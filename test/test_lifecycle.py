@@ -27,7 +27,7 @@ async def handle_connected(client: Client) -> None:
 
 
 @pytest.mark.asyncio
-async def test_lifecycle_connected():
+async def test_lifecycle_connected() -> None:
     pool = AddonPool().load(send_on_connected)
     client = MockClient(pool)
 

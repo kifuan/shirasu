@@ -2,7 +2,7 @@ import ujson
 import asyncio
 
 from pathlib import Path
-from typing import Any, Literal
+from typing import cast, Any, Literal
 from websockets.exceptions import ConnectionClosedError
 from websockets.legacy.client import connect, WebSocketClientProtocol
 
@@ -25,7 +25,7 @@ class OneBotClient(Client):
         super().__init__(pool, global_config)
         self._ws = ws
         self._futures = FutureTable()
-        self._tasks: set[asyncio.Task] = set()
+        self._tasks: set[asyncio.Task[None]] = set()
 
     async def call_action(self, action: str, **params: Any) -> dict[str, Any]:
         logger.info(f'Calling action {action}.')
@@ -117,4 +117,4 @@ class OneBotClient(Client):
             message_type=message_type,
             is_rejected=is_rejected,
         )
-        return res['message_id']
+        return cast(int, res['message_id'])

@@ -14,7 +14,7 @@ class MockClient(Client):
     The mock client used for testing.
     """
 
-    def __init__(self, pool: AddonPool, global_config: GlobalConfig | None = None):
+    def __init__(self, pool: AddonPool, global_config: GlobalConfig | None = None) -> None:
         """
         Initializes the MockClient.
         If you do not specify global config, it will use the default.

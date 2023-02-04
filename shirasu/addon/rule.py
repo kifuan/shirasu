@@ -61,7 +61,7 @@ def command(cmd: str) -> Rule:
     return message() & Rule(handler)
 
 
-def regex(r: Union[str, re.Pattern]) -> Rule:
+def regex(r: Union[str, re.Pattern[str]]) -> Rule:
     """
     The rule to match certain regex.
     :param r: regex, whether or not compiled.

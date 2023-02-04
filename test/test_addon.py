@@ -9,7 +9,7 @@ from shirasu.addon import (
 )
 
 
-def test_pool_load_error():
+def test_pool_load_error() -> None:
     pool = AddonPool()
     pool.load_module('shirasu.addons.echo')
 
@@ -21,7 +21,7 @@ def test_pool_load_error():
 
 
 @pytest.mark.asyncio
-async def test_echo():
+async def test_echo() -> None:
     pool = AddonPool.from_modules('shirasu.addons.echo')
     client = MockClient(pool)
 
@@ -35,7 +35,7 @@ async def test_echo():
 
 
 @pytest.mark.asyncio
-async def test_square():
+async def test_square() -> None:
     pool = AddonPool.from_modules('shirasu.addons.square')
     client = MockClient(pool)
 
@@ -49,7 +49,7 @@ async def test_square():
 
 
 @pytest.mark.asyncio
-async def test_tome():
+async def test_tome() -> None:
     pool = AddonPool.from_modules('shirasu.addons.reject_tome')
     client = MockClient(pool)
 
@@ -67,7 +67,7 @@ async def test_tome():
 
 
 @pytest.mark.asyncio
-async def test_superuser_manage_disable():
+async def test_superuser_manage_disable() -> None:
     pool = AddonPool.from_modules(
         'shirasu.addons.echo',
         'shirasu.addons.manage',
@@ -92,7 +92,7 @@ async def test_superuser_manage_disable():
 
 
 @pytest.mark.asyncio
-async def test_manage():
+async def test_manage() -> None:
     pool = AddonPool.from_modules(
         'shirasu.addons.echo',
         'shirasu.addons.manage',

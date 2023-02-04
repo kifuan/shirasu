@@ -6,7 +6,7 @@ from typing import Any
 class FutureTable:
     def __init__(self) -> None:
         self._future_id = 0
-        self._futures: dict[int, asyncio.Future] = {}
+        self._futures: dict[int, asyncio.Future[dict[str, Any]]] = {}
 
     def register(self) -> int:
         self._future_id = (self._future_id + 1) % sys.maxsize
